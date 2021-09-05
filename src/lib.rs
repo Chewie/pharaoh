@@ -6,9 +6,10 @@ pub trait DirEntryTrait {
 }
 
 pub fn is_a_yaml(entry: &impl DirEntryTrait) -> bool {
-    let extension = entry.path().extension().unwrap();
-
-    extension == "yaml" || extension == "yml"
+    match entry.path().extension() {
+        None => false,
+        Some(ext) => ext == "yaml" || ext == "yml"
+    }
 }
 
 impl DirEntryTrait for DirEntry {
@@ -57,6 +58,13 @@ mod tests {
     #[test]
     fn test_dotbar_is_not_a_yaml() {
         let entry = DummyEntry::new("foo.bar");
+
+        assert_eq!(false, is_a_yaml(&entry));
+    }
+
+    #[test]
+    fn test_no_dots() {
+        let entry = DummyEntry::new("foobar");
 
         assert_eq!(false, is_a_yaml(&entry));
     }
