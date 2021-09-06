@@ -37,7 +37,7 @@ fn get_yamls(search_dir: &str) -> Result<Vec<DirEntry>, Box<dyn Error>> {
 fn get_testfile_from_entry(search_dir: &str, entry : DirEntry) -> Result<TestFile, Box<dyn Error>> {
     let file = fs::File::open(entry.path())?;
 
-    let test_name = get_test_name(search_dir, entry.path());
+    let test_name = get_testfile_name(search_dir, entry.path());
 
     let mut result = TestFile{name: test_name, tests: vec!()};
 
@@ -50,7 +50,7 @@ fn get_testfile_from_entry(search_dir: &str, entry : DirEntry) -> Result<TestFil
 }
 
 
-fn get_test_name(search_dir: &str, path: &path::Path) -> String {
+fn get_testfile_name(search_dir: &str, path: &path::Path) -> String {
     let filename = path.with_extension("");
     let filename = filename.strip_prefix(search_dir).unwrap(); // Cannot fail
     let filename = filename.display().to_string();
@@ -67,7 +67,7 @@ mod tests {
         let search_dir = ".";
         let path = path::Path::new("./foo.yaml");
 
-        assert_eq!("foo", get_test_name(search_dir, path));
+        assert_eq!("foo", get_testfile_name(search_dir, path));
     }
 
     #[test]
@@ -75,7 +75,7 @@ mod tests {
         let search_dir = "foo";
         let path = path::Path::new("foo/bar.yaml");
 
-        assert_eq!("bar", get_test_name(search_dir, path));
+        assert_eq!("bar", get_testfile_name(search_dir, path));
     }
 
     #[test]
@@ -83,7 +83,7 @@ mod tests {
         let search_dir = "foo/";
         let path = path::Path::new("foo/bar.yaml");
 
-        assert_eq!("bar", get_test_name(search_dir, path));
+        assert_eq!("bar", get_testfile_name(search_dir, path));
     }
 
     #[test]
@@ -91,7 +91,7 @@ mod tests {
         let search_dir = ".";
         let path = path::Path::new("./foo/bar.yaml");
 
-        assert_eq!("foo/bar", get_test_name(search_dir, path));
+        assert_eq!("foo/bar", get_testfile_name(search_dir, path));
     }
 
     #[test]
@@ -99,6 +99,6 @@ mod tests {
         let search_dir = "subdir/";
         let path = path::Path::new("subdir/foo/bar.yaml");
 
-        assert_eq!("foo/bar", get_test_name(search_dir, path));
+        assert_eq!("foo/bar", get_testfile_name(search_dir, path));
     }
 }
