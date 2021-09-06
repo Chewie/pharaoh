@@ -24,9 +24,9 @@ fn test_no_yaml() -> Result<(), Box<dyn Error>>{
     let assert = cmd.assert();
 
     // THEN
-    assert
-        .stdout("No test case found. Exiting.\n")
-        .success();
+    assert.success()
+        .stderr("")
+        .stdout("No test case found. Exiting.\n");
     Ok(())
 }
 
@@ -41,9 +41,9 @@ fn test_empty_yaml() -> Result<(), Box<dyn Error>> {
     let assert = cmd.assert();
 
     // THEN
-    assert
-        .stdout("Running tests for ./test.yaml\n")
-        .success();
+    assert.success()
+        .stderr("")
+        .stdout("Running tests for test\n");
     Ok(())
 }
 
@@ -58,9 +58,9 @@ fn test_non_yaml_are_ignored() -> Result<(), Box<dyn Error>> {
     let assert = cmd.assert();
 
     // THEN
-    assert
-        .stdout("No test case found. Exiting.\n")
-        .success();
+    assert.success()
+        .stderr("")
+        .stdout("No test case found. Exiting.\n");
     Ok(())
 }
 
@@ -77,10 +77,10 @@ fn test_subdirs_are_searched() -> Result<(), Box<dyn Error>> {
     let assert = cmd.assert();
 
     // THEN
-    assert
-        .stdout("Running tests for ./root.yaml\n\
-                 Running tests for ./subdir/subdir.yaml\n")
-        .success();
+    assert.success()
+        .stderr("")
+        .stdout("Running tests for root\n\
+                 Running tests for subdir/subdir\n");
     Ok(())
 }
 
