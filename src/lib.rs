@@ -1,71 +1,46 @@
-use walkdir::DirEntry;
-use std::path;
+use std::error::Error;
 
-pub trait DirEntryTrait {
-    fn path(&self) -> &path::Path;
+use globwalk::{GlobWalkerBuilder, DirEntry};
+use clap::{App, Arg};
+
+pub fn run() -> Result<(), Box<dyn Error>> {
+    let matches = build_args().get_matches();
+
+    let search_dir = matches.value_of("search_dir").unwrap_or(".");
+
+    let entries = get_yamls(search_dir)?;
+
+    if entries.is_empty() {
+        println!("No test case found. Exiting.");
+        return Ok(());
+    }
+    for entry in entries {
+        handle_entry(entry);
+    }
+    Ok(())
 }
 
-pub fn is_a_yaml(entry: &impl DirEntryTrait) -> bool {
-    match entry.path().extension() {
-        None => false,
-        Some(ext) => ext == "yaml" || ext == "yml"
-    }
-}
-
-impl DirEntryTrait for DirEntry {
-    fn path(&self) -> &path::Path {
-        self.path()
-    }
+fn build_args() -> App<'static, 'static> {
+    App::new("Pharaoh")
+        .arg(Arg::with_name("search_dir")
+            .index(1)
+            .default_value("."))
 }
 
 
+fn get_yamls(search_dir: &str) -> Result<Vec<DirEntry>, Box<dyn Error>> {
+    Ok(GlobWalkerBuilder::from_patterns(
+        search_dir,
+        &["**/*.yaml", "**/*.yml"]
+    )
+        .min_depth(1)
+        .build()?
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect())
+}
 
-#[cfg(test)]
-mod tests {
 
-    struct DummyEntry {
-        path: &'static str
-    }
-
-    impl DummyEntry {
-        fn new(path: &'static str) -> Self {
-            DummyEntry { path: path }
-        }
-    }
-
-    impl DirEntryTrait for DummyEntry {
-        fn path(&self) -> &path::Path {
-            path::Path::new(self.path)
-        }
-    }
-
-    use super::*;
-
-    #[test]
-    fn test_dotyaml_is_a_yaml() {
-        let entry = DummyEntry::new("foo.yaml");
-
-        assert_eq!(true, is_a_yaml(&entry));
-    }
-
-    #[test]
-    fn test_dotyml_is_a_yaml() {
-        let entry = DummyEntry::new("foo.yml");
-
-        assert_eq!(true, is_a_yaml(&entry));
-    }
-
-    #[test]
-    fn test_dotbar_is_not_a_yaml() {
-        let entry = DummyEntry::new("foo.bar");
-
-        assert_eq!(false, is_a_yaml(&entry));
-    }
-
-    #[test]
-    fn test_no_dots() {
-        let entry = DummyEntry::new("foobar");
-
-        assert_eq!(false, is_a_yaml(&entry));
-    }
+fn handle_entry(entry : DirEntry) {
+    println!("Running tests for {}", entry.path().display());
 }
