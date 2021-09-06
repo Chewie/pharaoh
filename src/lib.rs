@@ -2,6 +2,11 @@ use std::error::Error;
 
 use globwalk::{GlobWalkerBuilder, DirEntry};
 use clap::{App, Arg};
+use serde_yaml::Value;
+use serde::Deserialize;
+
+mod test_case;
+use test_case::{TestCase, TestFile};
 
 pub fn run() -> Result<(), Box<dyn Error>> {
     let matches = build_args().get_matches();
@@ -15,7 +20,8 @@ pub fn run() -> Result<(), Box<dyn Error>> {
         return Ok(());
     }
     for entry in entries {
-        handle_entry(entry);
+        let testfile = get_testfile_from_entry(search_dir, entry)?;
+        run_testfile(testfile);
     }
     Ok(())
 }
@@ -40,7 +46,26 @@ fn get_yamls(search_dir: &str) -> Result<Vec<DirEntry>, Box<dyn Error>> {
         .collect())
 }
 
+fn run_testfile(testfile: TestFile) {
+    println!("Running tests for {}", testfile.name);
+    for test in testfile.tests {
+        println!("{}: OK", test.name);
+    }
+}
 
-fn handle_entry(entry : DirEntry) {
-    println!("Running tests for {}", entry.path().display());
+
+fn get_testfile_from_entry(search_dir: &str, entry : DirEntry) -> Result<TestFile, Box<dyn Error>> {
+    let file = std::fs::File::open(entry.path())?;
+    let filename = entry.path().with_extension("");
+    let filename = filename.strip_prefix(search_dir)?;
+    let filename = filename.display().to_string();
+
+    let mut result = TestFile{name: filename, tests: vec!()};
+
+    for document in serde_yaml::Deserializer::from_reader(file) {
+        let value = Value::deserialize(document)?;
+        let test_case : TestCase = serde_yaml::from_value(value)?;
+        result.tests.push(test_case);
+    }
+    Ok(result)
 }

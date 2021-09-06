@@ -1,8 +1,10 @@
 use std::fs;
+use std::io::Write;
 use std::fs::File;
 use std::error::Error;
 use assert_cmd::Command;
 use tempfile::tempdir;
+use indoc::indoc;
 
 fn command_in_tmpdir() -> Result<(assert_cmd::Command, tempfile::TempDir), Box<dyn Error>> {
     let tmp = tempdir()?;
@@ -13,7 +15,6 @@ fn command_in_tmpdir() -> Result<(assert_cmd::Command, tempfile::TempDir), Box<d
 
     Ok((cmd, tmp))
 }
-
 
 #[test]
 fn test_no_yaml() -> Result<(), Box<dyn Error>>{
@@ -99,8 +100,36 @@ fn test_search_in_specific_directory() -> Result<(), Box<dyn Error>> {
     let assert = cmd.assert();
 
     // THEN
-    assert
-        .stdout("Running tests for subdir/subdir.yaml\n")
-        .success();
+    assert.success()
+        .stderr("")
+        .stdout("Running tests for subdir\n");
     Ok(())
 }
+
+#[test]
+fn test_trivial_yaml() -> Result<(), Box<dyn Error>> {
+    // GIVEN
+    let (mut cmd, tmp) = command_in_tmpdir()?;
+
+    let mut file = File::create(tmp.path().join("foo.yaml"))?;
+    file.write_all(indoc!{r#"
+        name: trivial1
+        cmd: echo -n
+        ---
+        name: trivial2
+        cmd: echo -n
+    "#}.as_bytes())?;
+    // WHEN
+    let assert = cmd.assert();
+
+    // THEN
+    assert.success()
+        .stderr("")
+        .stdout(indoc!{r#"
+            Running tests for foo
+            trivial1: OK
+            trivial2: OK
+         "#});
+    Ok(())
+}
+
