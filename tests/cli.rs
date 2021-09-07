@@ -1,10 +1,10 @@
-use std::fs;
-use std::io::Write;
-use std::fs::File;
-use std::error::Error;
 use assert_cmd::Command;
-use tempfile::tempdir;
 use indoc::indoc;
+use std::error::Error;
+use std::fs;
+use std::fs::File;
+use std::io::Write;
+use tempfile::tempdir;
 
 fn command_in_tmpdir() -> Result<(assert_cmd::Command, tempfile::TempDir), Box<dyn Error>> {
     let tmp = tempdir()?;
@@ -17,7 +17,7 @@ fn command_in_tmpdir() -> Result<(assert_cmd::Command, tempfile::TempDir), Box<d
 }
 
 #[test]
-fn test_no_yaml() -> Result<(), Box<dyn Error>>{
+fn test_no_yaml() -> Result<(), Box<dyn Error>> {
     // GIVEN
     let (mut cmd, _tmp) = command_in_tmpdir()?;
 
@@ -25,7 +25,8 @@ fn test_no_yaml() -> Result<(), Box<dyn Error>>{
     let assert = cmd.assert();
 
     // THEN
-    assert.success()
+    assert
+        .success()
         .stderr("")
         .stdout("No test case found. Exiting.\n");
     Ok(())
@@ -42,7 +43,8 @@ fn test_empty_yaml() -> Result<(), Box<dyn Error>> {
     let assert = cmd.assert();
 
     // THEN
-    assert.success()
+    assert
+        .success()
         .stderr("")
         .stdout("Running tests for test\n");
     Ok(())
@@ -59,7 +61,8 @@ fn test_non_yaml_are_ignored() -> Result<(), Box<dyn Error>> {
     let assert = cmd.assert();
 
     // THEN
-    assert.success()
+    assert
+        .success()
         .stderr("")
         .stdout("No test case found. Exiting.\n");
     Ok(())
@@ -78,9 +81,7 @@ fn test_subdirs_are_searched() -> Result<(), Box<dyn Error>> {
     let assert = cmd.assert();
 
     // THEN
-    assert.success()
-        .stderr("")
-        .stdout(indoc!{r#"
+    assert.success().stderr("").stdout(indoc! {r#"
             Running tests for root
             Running tests for subdir/subdir
             "#});
@@ -102,7 +103,8 @@ fn test_search_in_specific_directory() -> Result<(), Box<dyn Error>> {
     let assert = cmd.assert();
 
     // THEN
-    assert.success()
+    assert
+        .success()
         .stderr("")
         .stdout("Running tests for subdir\n");
     Ok(())
@@ -115,24 +117,24 @@ fn test_trivial_yaml() -> Result<(), Box<dyn Error>> {
     let (mut cmd, tmp) = command_in_tmpdir()?;
 
     let mut file = File::create(tmp.path().join("foo.yaml"))?;
-    file.write_all(indoc!{r#"
+    file.write_all(
+        indoc! {r#"
         name: trivial1
         cmd: echo -n
         ---
         name: trivial2
         cmd: echo -n
-    "#}.as_bytes())?;
+    "#}
+        .as_bytes(),
+    )?;
     // WHEN
     let assert = cmd.assert();
 
     // THEN
-    assert.success()
-        .stderr("")
-        .stdout(indoc!{r#"
+    assert.success().stderr("").stdout(indoc! {r#"
             Running tests for foo
             test foo::trivial1 ... OK
             test foo::trivial2 ... OK
          "#});
     Ok(())
 }
-

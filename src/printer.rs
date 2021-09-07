@@ -1,6 +1,6 @@
-use similar::{TextDiff, ChangeTag};
 use colored::Colorize;
-use indoc::{indoc, formatdoc};
+use indoc::{formatdoc, indoc};
+use similar::{ChangeTag, TextDiff};
 
 struct TestResult {
     name: String,
@@ -10,7 +10,7 @@ struct TestResult {
     expected_stderr: String,
     actual_stderr: String,
     expected_status: i64,
-    actual_status: i64
+    actual_status: i64,
 }
 
 impl TestResult {
@@ -23,24 +23,24 @@ impl TestResult {
             expected_stderr: "".to_string(),
             actual_stderr: "".to_string(),
             expected_status: 0,
-            actual_status: 0
+            actual_status: 0,
         }
     }
 }
 
 //pub fn run_test(testsuite: &TestFile, testcase: &TestCase) {
-    //let result = TestResult{
-        //name: testcase.name.clone(),
-        //testsuite: testsuite.name.clone(),
-        //stdout_diff: TextDiff::from_lines("", "").ops().to_vec(),
-        //stderr_diff: TextDiff::from_lines("", "").ops().to_vec(),
-        //expected_status: 0,
-        //actual_status: 0
-    //};
-    //println!("{}", format_summary(&result, &compute_summary(&result)));
-    //for line in compute_summary(&result) {
-        //println!("{}", line);
-    //}
+//let result = TestResult{
+//name: testcase.name.clone(),
+//testsuite: testsuite.name.clone(),
+//stdout_diff: TextDiff::from_lines("", "").ops().to_vec(),
+//stderr_diff: TextDiff::from_lines("", "").ops().to_vec(),
+//expected_status: 0,
+//actual_status: 0
+//};
+//println!("{}", format_summary(&result, &compute_summary(&result)));
+//for line in compute_summary(&result) {
+//println!("{}", line);
+//}
 //}
 //
 
@@ -49,20 +49,23 @@ fn compute_summary(result: &TestResult) -> String {
         compute_status(result.expected_status, result.actual_status),
         compute_diff("stdout", &result.expected_stdout, &result.actual_stdout),
         compute_diff("stderr", &result.expected_stderr, &result.actual_stderr),
-    ].join("")
+    ]
+    .join("")
 }
 
 fn compute_status(expected: i64, actual: i64) -> String {
     match expected == actual {
         true => String::new(),
-        false => formatdoc!(r#"
+        false => formatdoc!(
+            r#"
             {} differs:
             expected: {}
             actual: {}
             "#,
             "status code".yellow(),
             expected,
-            actual),
+            actual
+        ),
     }
 }
 
@@ -70,11 +73,14 @@ fn compute_diff(name: &str, expected: &str, actual: &str) -> String {
     let mut diff_summary = vec![];
     let diff = TextDiff::from_lines(expected, actual);
     if !diff.ops().to_vec().is_empty() {
-        diff_summary.push(formatdoc!(r#"
+        diff_summary.push(formatdoc!(
+            r#"
             {} differs:
             --- expected
             +++ actual
-            "#, name.yellow()));
+            "#,
+            name.yellow()
+        ));
     }
     for change in diff.iter_all_changes() {
         let sign = match change.tag() {
@@ -87,20 +93,16 @@ fn compute_diff(name: &str, expected: &str, actual: &str) -> String {
     diff_summary.join("")
 }
 
-
-
-
-
 fn format_oneliner(result: &TestResult, success: bool) -> String {
     let success_msg = match success {
         true => "OK".green(),
         false => "FAILED".red(),
     };
 
-    format!("test {}::{} ... {}",
-        result.testsuite,
-        result.name,
-        success_msg)
+    format!(
+        "test {}::{} ... {}",
+        result.testsuite, result.name, success_msg
+    )
 }
 
 #[cfg(test)]
@@ -130,12 +132,14 @@ mod tests {
         let summary = compute_summary(&result);
 
         // THEN
-        assert_eq!(formatdoc!{r#"
+        assert_eq!(
+            formatdoc! {r#"
             {} differs:
             expected: 0
             actual: 1
             "#, "status code".yellow()},
-            summary);
+            summary
+        );
     }
 
     #[test]
@@ -149,13 +153,16 @@ mod tests {
         let summary = compute_summary(&result);
 
         // THEN
-        assert_eq!(formatdoc!{r#"
+        assert_eq!(
+            formatdoc! {r#"
             {} differs:
             --- expected
             +++ actual
             -foo
             +fou
-            "#, "stdout".yellow()}, summary);
+            "#, "stdout".yellow()},
+            summary
+        );
     }
 
     #[test]
@@ -169,19 +176,22 @@ mod tests {
         let summary = compute_summary(&result);
 
         // THEN
-        assert_eq!(formatdoc!{r#"
+        assert_eq!(
+            formatdoc! {r#"
             {} differs:
             --- expected
             +++ actual
             -foo
             +fou
-            "#, "stderr".yellow()}, summary);
+            "#, "stderr".yellow()},
+            summary
+        );
     }
 
     #[test]
     fn test_compute_summary_everything_differs() {
         // GIVEN
-        let result = TestResult{
+        let result = TestResult {
             name: "mytest".into(),
             testsuite: "mysuite".into(),
             expected_stdout: "foo".to_string(),
@@ -189,14 +199,15 @@ mod tests {
             expected_stderr: "bar".to_string(),
             actual_stderr: "baz".to_string(),
             expected_status: 0,
-            actual_status: 1
+            actual_status: 1,
         };
 
         // WHEN
         let summary = compute_summary(&result);
 
         // THEN
-        assert_eq!(formatdoc!{r#"
+        assert_eq!(
+            formatdoc! {r#"
                 {} differs:
                 expected: 0
                 actual: 1
@@ -211,35 +222,42 @@ mod tests {
                 -bar
                 +baz
                 "#,
-                "status code".yellow(),
-                "stdout".yellow(),
-                "stderr".yellow()},
-            summary);
+            "status code".yellow(),
+            "stdout".yellow(),
+            "stderr".yellow()},
+            summary
+        );
     }
 
     #[test]
     fn test_format_oneliner_success() {
-       // GIVEN
-       let result = TestResult::from_name("mytest", "mysuite");
-       let success = true;
+        // GIVEN
+        let result = TestResult::from_name("mytest", "mysuite");
+        let success = true;
 
-       // WHEN
-       let oneliner = format_oneliner(&result, success);
+        // WHEN
+        let oneliner = format_oneliner(&result, success);
 
-       // THEN
-       assert_eq!(format!("test mysuite::mytest ... {}", "OK".green()), oneliner);
+        // THEN
+        assert_eq!(
+            format!("test mysuite::mytest ... {}", "OK".green()),
+            oneliner
+        );
     }
 
     #[test]
     fn test_format_oneliner_failure() {
-       // GIVEN
-       let result = TestResult::from_name("supertest", "supersuite");
-       let success = false;
+        // GIVEN
+        let result = TestResult::from_name("supertest", "supersuite");
+        let success = false;
 
-       // WHEN
-       let oneliner = format_oneliner(&result, success);
+        // WHEN
+        let oneliner = format_oneliner(&result, success);
 
-       // THEN
-       assert_eq!(format!("test supersuite::supertest ... {}", "FAILED".red()), oneliner);
+        // THEN
+        assert_eq!(
+            format!("test supersuite::supertest ... {}", "FAILED".red()),
+            oneliner
+        );
     }
 }

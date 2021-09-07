@@ -23,19 +23,14 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 
     for testfile in testfiles {
         run_testfile(testfile);
-
     }
 
     Ok(())
 }
 
 fn build_args() -> App<'static, 'static> {
-    App::new("Pharaoh")
-        .arg(Arg::with_name("search_dir")
-            .index(1)
-            .default_value("."))
+    App::new("Pharaoh").arg(Arg::with_name("search_dir").index(1).default_value("."))
 }
-
 
 fn run_testfile(testfile: TestFile) {
     println!("Running tests for {}", testfile.name);

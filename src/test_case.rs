@@ -1,4 +1,4 @@
-pub use serde::{Serialize, Deserialize};
+pub use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TestCase {
@@ -11,11 +11,11 @@ pub struct TestCase {
     #[serde(default)]
     pub stderr: String,
     #[serde(default)]
-    pub status: i64
+    pub status: i64,
 }
 
 #[derive(Debug)]
 pub struct TestFile {
     pub name: String,
-    pub tests: Vec<TestCase>
+    pub tests: Vec<TestCase>,
 }

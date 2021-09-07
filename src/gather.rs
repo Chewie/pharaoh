@@ -1,17 +1,17 @@
 use std::error::Error;
-use std::path;
 use std::fs;
+use std::path;
 
-use globwalk::{GlobWalkerBuilder, DirEntry};
-use serde_yaml::Value;
+use globwalk::{DirEntry, GlobWalkerBuilder};
 use serde::Deserialize;
+use serde_yaml::Value;
 
 use crate::test_case::{TestCase, TestFile};
 
 pub fn gather_testfiles(search_dir: &str) -> Result<Vec<TestFile>, Box<dyn Error>> {
     let entries = get_yamls(search_dir)?;
 
-    let mut result : Vec<TestFile> = vec!();
+    let mut result: Vec<TestFile> = vec![];
     for entry in entries {
         let testfile = get_testfile_from_entry(search_dir, entry)?;
         result.push(testfile);
@@ -19,36 +19,34 @@ pub fn gather_testfiles(search_dir: &str) -> Result<Vec<TestFile>, Box<dyn Error
     Ok(result)
 }
 
-
-
 fn get_yamls(search_dir: &str) -> Result<Vec<DirEntry>, Box<dyn Error>> {
-    Ok(GlobWalkerBuilder::from_patterns(
-        search_dir,
-        &["**/*.yaml", "**/*.yml"]
+    Ok(
+        GlobWalkerBuilder::from_patterns(search_dir, &["**/*.yaml", "**/*.yml"])
+            .min_depth(1)
+            .build()?
+            .into_iter()
+            .filter_map(Result::ok)
+            .collect(),
     )
-        .min_depth(1)
-        .build()?
-        .into_iter()
-        .filter_map(Result::ok)
-        .collect())
 }
 
-
-fn get_testfile_from_entry(search_dir: &str, entry : DirEntry) -> Result<TestFile, Box<dyn Error>> {
+fn get_testfile_from_entry(search_dir: &str, entry: DirEntry) -> Result<TestFile, Box<dyn Error>> {
     let file = fs::File::open(entry.path())?;
 
     let test_name = get_testfile_name(search_dir, entry.path());
 
-    let mut result = TestFile{name: test_name, tests: vec!()};
+    let mut result = TestFile {
+        name: test_name,
+        tests: vec![],
+    };
 
     for document in serde_yaml::Deserializer::from_reader(file) {
         let value = Value::deserialize(document)?;
-        let test_case : TestCase = serde_yaml::from_value(value)?;
+        let test_case: TestCase = serde_yaml::from_value(value)?;
         result.tests.push(test_case);
     }
     Ok(result)
 }
-
 
 fn get_testfile_name(search_dir: &str, path: &path::Path) -> String {
     let filename = path.with_extension("");
