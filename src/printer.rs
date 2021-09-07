@@ -45,12 +45,11 @@ impl TestResult {
 //
 
 fn compute_summary(result: &TestResult) -> String {
-    let mut summary = vec![];
-
-    summary.push(compute_status(result.expected_status, result.actual_status));
-    summary.extend(compute_diff("stdout", &result.expected_stdout, &result.actual_stdout));
-    summary.extend(compute_diff("stderr", &result.expected_stderr, &result.actual_stderr));
-    summary.join("")
+    vec![
+        compute_status(result.expected_status, result.actual_status),
+        compute_diff("stdout", &result.expected_stdout, &result.actual_stdout),
+        compute_diff("stderr", &result.expected_stderr, &result.actual_stderr),
+    ].join("")
 }
 
 fn compute_status(expected: i64, actual: i64) -> String {
@@ -67,7 +66,7 @@ fn compute_status(expected: i64, actual: i64) -> String {
     }
 }
 
-fn compute_diff(name: &str, expected: &str, actual: &str) -> Vec<String> {
+fn compute_diff(name: &str, expected: &str, actual: &str) -> String {
     let mut diff_summary = vec![];
     let diff = TextDiff::from_lines(expected, actual);
     if !diff.ops().to_vec().is_empty() {
@@ -85,7 +84,7 @@ fn compute_diff(name: &str, expected: &str, actual: &str) -> Vec<String> {
         };
         diff_summary.push(format!("{}{}", sign, change));
     }
-    diff_summary
+    diff_summary.join("")
 }
 
 
