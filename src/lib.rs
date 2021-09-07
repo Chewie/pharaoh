@@ -7,6 +7,8 @@ use test_case::TestFile;
 
 mod gather;
 
+mod printer;
+
 pub fn run() -> Result<(), Box<dyn Error>> {
     let matches = build_args().get_matches();
 
@@ -21,6 +23,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 
     for testfile in testfiles {
         run_testfile(testfile);
+
     }
 
     Ok(())
@@ -36,7 +39,7 @@ fn build_args() -> App<'static, 'static> {
 
 fn run_testfile(testfile: TestFile) {
     println!("Running tests for {}", testfile.name);
-    for test in testfile.tests {
-        println!("{}: OK", test.name);
+    for test in &testfile.tests {
+        //printer::run_test(&testfile, &test);
     }
 }
