@@ -57,10 +57,11 @@ fn compute_status(expected: i64, actual: i64) -> String {
     match expected == actual {
         true => String::new(),
         false => formatdoc!(r#"
-            status code differs:
+            {} differs:
             expected: {}
             actual: {}
             "#,
+            "status code".yellow(),
             expected,
             actual),
     }
@@ -74,7 +75,7 @@ fn compute_diff(name: &str, expected: &str, actual: &str) -> Vec<String> {
             {} differs:
             --- expected
             +++ actual
-            "#, name));
+            "#, name.yellow()));
     }
     for change in diff.iter_all_changes() {
         let sign = match change.tag() {
@@ -86,6 +87,8 @@ fn compute_diff(name: &str, expected: &str, actual: &str) -> Vec<String> {
     }
     diff_summary
 }
+
+
 
 
 
@@ -128,11 +131,12 @@ mod tests {
         let summary = compute_summary(&result);
 
         // THEN
-        assert_eq!(indoc!{r#"
-            status code differs:
+        assert_eq!(formatdoc!{r#"
+            {} differs:
             expected: 0
             actual: 1
-            "#}, summary);
+            "#, "status code".yellow()},
+            summary);
     }
 
     #[test]
@@ -146,13 +150,13 @@ mod tests {
         let summary = compute_summary(&result);
 
         // THEN
-        assert_eq!(indoc!{r#"
-            stdout differs:
+        assert_eq!(formatdoc!{r#"
+            {} differs:
             --- expected
             +++ actual
             -foo
             +fou
-            "#}, summary);
+            "#, "stdout".yellow()}, summary);
     }
 
     #[test]
@@ -166,13 +170,13 @@ mod tests {
         let summary = compute_summary(&result);
 
         // THEN
-        assert_eq!(indoc!{r#"
-            stderr differs:
+        assert_eq!(formatdoc!{r#"
+            {} differs:
             --- expected
             +++ actual
             -foo
             +fou
-            "#}, summary);
+            "#, "stderr".yellow()}, summary);
     }
 
     #[test]
@@ -193,21 +197,25 @@ mod tests {
         let summary = compute_summary(&result);
 
         // THEN
-        assert_eq!(indoc!{r#"
-            status code differs:
-            expected: 0
-            actual: 1
-            stdout differs:
-            --- expected
-            +++ actual
-            -foo
-            +fou
-            stderr differs:
-            --- expected
-            +++ actual
-            -bar
-            +baz
-            "#}, summary);
+        assert_eq!(formatdoc!{r#"
+                {} differs:
+                expected: 0
+                actual: 1
+                {} differs:
+                --- expected
+                +++ actual
+                -foo
+                +fou
+                {} differs:
+                --- expected
+                +++ actual
+                -bar
+                +baz
+                "#,
+                "status code".yellow(),
+                "stdout".yellow(),
+                "stderr".yellow()},
+            summary);
     }
 
     #[test]
