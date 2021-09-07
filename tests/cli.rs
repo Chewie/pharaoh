@@ -80,8 +80,10 @@ fn test_subdirs_are_searched() -> Result<(), Box<dyn Error>> {
     // THEN
     assert.success()
         .stderr("")
-        .stdout("Running tests for root\n\
-                 Running tests for subdir/subdir\n");
+        .stdout(indoc!{r#"
+            Running tests for root
+            Running tests for subdir/subdir
+            "#});
     Ok(())
 }
 
