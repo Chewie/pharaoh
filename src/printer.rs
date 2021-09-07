@@ -1,6 +1,6 @@
 use similar::{TextDiff, ChangeTag};
 use colored::Colorize;
-use indoc::indoc;
+use indoc::{indoc, formatdoc};
 
 struct TestResult {
     name: String,
@@ -56,11 +56,13 @@ fn compute_summary(result: &TestResult) -> String {
 fn compute_status(expected: i64, actual: i64) -> String {
     match expected == actual {
         true => String::new(),
-        false => format!("status code differs:\n\
-                expected: {}\n\
-                actual: {}\n",
-                expected,
-                actual),
+        false => formatdoc!(r#"
+            status code differs:
+            expected: {}
+            actual: {}
+            "#,
+            expected,
+            actual),
     }
 }
 
@@ -68,9 +70,11 @@ fn compute_diff(name: &str, expected: &str, actual: &str) -> Vec<String> {
     let mut diff_summary = vec![];
     let diff = TextDiff::from_lines(expected, actual);
     if !diff.ops().to_vec().is_empty() {
-        diff_summary.push(format!("{} differs:\n\
-        --- expected\n\
-        +++ actual\n", name));
+        diff_summary.push(formatdoc!(r#"
+            {} differs:
+            --- expected
+            +++ actual
+            "#, name));
     }
     for change in diff.iter_all_changes() {
         let sign = match change.tag() {
@@ -104,16 +108,7 @@ mod tests {
     #[test]
     fn test_compute_summary_successful() {
         // GIVEN
-        let result = TestResult{
-            name: "mytest".to_string(),
-            testsuite: "mysuite".to_string(),
-            expected_stdout: "".to_string(),
-            actual_stdout: "".to_string(),
-            expected_stderr: "".to_string(),
-            actual_stderr: "".to_string(),
-            expected_status: 0,
-            actual_status: 0
-        };
+        let result = TestResult::from_name("mytest", "mysuite");
 
         // WHEN
         let summary = compute_summary(&result);
@@ -125,74 +120,59 @@ mod tests {
     #[test]
     fn test_compute_summary_code_differs() {
         // GIVEN
-        let result = TestResult{
-            name: "mytest".into(),
-            testsuite: "mysuite".into(),
-            expected_stdout: "".to_string(),
-            actual_stdout: "".to_string(),
-            expected_stderr: "".to_string(),
-            actual_stderr: "".to_string(),
-            expected_status: 0,
-            actual_status: 1
-        };
+        let mut result = TestResult::from_name("mytest", "mysuite");
+        result.expected_status = 0;
+        result.actual_status = 1;
 
         // WHEN
         let summary = compute_summary(&result);
 
         // THEN
-        assert_eq!("status code differs:\n\
-            expected: 0\n\
-            actual: 1\n", summary);
+        assert_eq!(indoc!{r#"
+            status code differs:
+            expected: 0
+            actual: 1
+            "#}, summary);
     }
 
     #[test]
     fn test_compute_summary_stdout_differs() {
         // GIVEN
-        let result = TestResult{
-            name: "mytest".into(),
-            testsuite: "mysuite".into(),
-            expected_stdout: "foo".to_string(),
-            actual_stdout: "fou".to_string(),
-            expected_stderr: "".to_string(),
-            actual_stderr: "".to_string(),
-            expected_status: 0,
-            actual_status: 0
-        };
+        let mut result = TestResult::from_name("mytest", "mysuite");
+        result.expected_stdout = "foo".to_string();
+        result.actual_stdout = "fou".to_string();
 
         // WHEN
         let summary = compute_summary(&result);
 
         // THEN
-        assert_eq!("stdout differs:\n\
-            --- expected\n\
-            +++ actual\n\
-            -foo\n\
-            +fou\n", summary);
+        assert_eq!(indoc!{r#"
+            stdout differs:
+            --- expected
+            +++ actual
+            -foo
+            +fou
+            "#}, summary);
     }
 
     #[test]
     fn test_compute_summary_stderr_differs() {
         // GIVEN
-        let result = TestResult{
-            name: "mytest".into(),
-            testsuite: "mysuite".into(),
-            expected_stdout: "".to_string(),
-            actual_stdout: "".to_string(),
-            expected_stderr: "foo".to_string(),
-            actual_stderr: "fou".to_string(),
-            expected_status: 0,
-            actual_status: 0
-        };
+        let mut result = TestResult::from_name("mytest", "mysuite");
+        result.expected_stderr = "foo".to_string();
+        result.actual_stderr = "fou".to_string();
 
         // WHEN
         let summary = compute_summary(&result);
 
         // THEN
-        assert_eq!("stderr differs:\n\
-            --- expected\n\
-            +++ actual\n\
-            -foo\n\
-            +fou\n", summary);
+        assert_eq!(indoc!{r#"
+            stderr differs:
+            --- expected
+            +++ actual
+            -foo
+            +fou
+            "#}, summary);
     }
 
     #[test]
