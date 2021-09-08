@@ -1,48 +1,35 @@
 use colored::Colorize;
-use indoc::{formatdoc, indoc};
+use indoc::{formatdoc, printdoc};
 use similar::{ChangeTag, TextDiff};
 
-struct TestResult {
-    name: String,
-    testsuite: String,
-    expected_stdout: String,
-    actual_stdout: String,
-    expected_stderr: String,
-    actual_stderr: String,
-    expected_status: i64,
-    actual_status: i64,
-}
+use crate::runner::{TestReport, TestResult};
 
-impl TestResult {
-    pub fn from_name(name: &str, testsuite: &str) -> TestResult {
-        TestResult {
-            name: name.to_string(),
-            testsuite: testsuite.to_string(),
-            expected_stdout: "".to_string(),
-            actual_stdout: "".to_string(),
-            expected_stderr: "".to_string(),
-            actual_stderr: "".to_string(),
-            expected_status: 0,
-            actual_status: 0,
+pub fn print_report(report: &TestReport) {
+    let mut failures = vec![];
+
+    for suite_result in &report.testsuites {
+        println!("Running tests for {}", suite_result.name);
+        for test_result in &suite_result.results {
+            let successful = test_result.is_successful();
+            println!("{}", format_oneliner(test_result, successful));
+            if !successful {
+                failures.push(test_result);
+            }
+        }
+    }
+
+    if !failures.is_empty() {
+        println!("\nfailures:\n");
+        for failure in failures {
+            printdoc! {r#"
+            ---- {} ----
+            {}
+            "#,
+            failure.name,
+            compute_summary(failure)};
         }
     }
 }
-
-//pub fn run_test(testsuite: &TestFile, testcase: &TestCase) {
-//let result = TestResult{
-//name: testcase.name.clone(),
-//testsuite: testsuite.name.clone(),
-//stdout_diff: TextDiff::from_lines("", "").ops().to_vec(),
-//stderr_diff: TextDiff::from_lines("", "").ops().to_vec(),
-//expected_status: 0,
-//actual_status: 0
-//};
-//println!("{}", format_summary(&result, &compute_summary(&result)));
-//for line in compute_summary(&result) {
-//println!("{}", line);
-//}
-//}
-//
 
 fn compute_summary(result: &TestResult) -> String {
     vec![
@@ -53,7 +40,7 @@ fn compute_summary(result: &TestResult) -> String {
     .join("")
 }
 
-fn compute_status(expected: i64, actual: i64) -> String {
+fn compute_status(expected: i32, actual: i32) -> String {
     match expected == actual {
         true => String::new(),
         false => formatdoc!(
@@ -99,10 +86,7 @@ fn format_oneliner(result: &TestResult, success: bool) -> String {
         false => "FAILED".red(),
     };
 
-    format!(
-        "test {}::{} ... {}",
-        result.testsuite, result.name, success_msg
-    )
+    format!("test {} ... {}", result.name, success_msg)
 }
 
 #[cfg(test)]
@@ -112,7 +96,7 @@ mod tests {
     #[test]
     fn test_compute_summary_successful() {
         // GIVEN
-        let result = TestResult::from_name("mytest", "mysuite");
+        let result = TestResult::from_name("mytest");
 
         // WHEN
         let summary = compute_summary(&result);
@@ -124,7 +108,7 @@ mod tests {
     #[test]
     fn test_compute_summary_code_differs() {
         // GIVEN
-        let mut result = TestResult::from_name("mytest", "mysuite");
+        let mut result = TestResult::from_name("mytest");
         result.expected_status = 0;
         result.actual_status = 1;
 
@@ -145,7 +129,7 @@ mod tests {
     #[test]
     fn test_compute_summary_stdout_differs() {
         // GIVEN
-        let mut result = TestResult::from_name("mytest", "mysuite");
+        let mut result = TestResult::from_name("mytest");
         result.expected_stdout = "foo".to_string();
         result.actual_stdout = "fou".to_string();
 
@@ -168,7 +152,7 @@ mod tests {
     #[test]
     fn test_compute_summary_stderr_differs() {
         // GIVEN
-        let mut result = TestResult::from_name("mytest", "mysuite");
+        let mut result = TestResult::from_name("mytest");
         result.expected_stderr = "foo".to_string();
         result.actual_stderr = "fou".to_string();
 
@@ -193,7 +177,6 @@ mod tests {
         // GIVEN
         let result = TestResult {
             name: "mytest".into(),
-            testsuite: "mysuite".into(),
             expected_stdout: "foo".to_string(),
             actual_stdout: "fou".to_string(),
             expected_stderr: "bar".to_string(),
@@ -232,7 +215,7 @@ mod tests {
     #[test]
     fn test_format_oneliner_success() {
         // GIVEN
-        let result = TestResult::from_name("mytest", "mysuite");
+        let result = TestResult::from_name("mysuite::mytest");
         let success = true;
 
         // WHEN
@@ -248,7 +231,7 @@ mod tests {
     #[test]
     fn test_format_oneliner_failure() {
         // GIVEN
-        let result = TestResult::from_name("supertest", "supersuite");
+        let result = TestResult::from_name("anothersuite::anothertest");
         let success = false;
 
         // WHEN
@@ -256,7 +239,7 @@ mod tests {
 
         // THEN
         assert_eq!(
-            format!("test supersuite::supertest ... {}", "FAILED".red()),
+            format!("test anothersuite::anothertest ... {}", "FAILED".red()),
             oneliner
         );
     }

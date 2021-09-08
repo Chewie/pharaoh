@@ -6,7 +6,7 @@ use globwalk::{DirEntry, GlobWalkerBuilder};
 use serde::Deserialize;
 use serde_yaml::Value;
 
-use crate::test_case::{TestCase, TestFile};
+use crate::testcase::{TestCase, TestFile};
 
 pub fn gather_testfiles(search_dir: &str) -> Result<Vec<TestFile>, Box<dyn Error>> {
     let entries = get_yamls(search_dir)?;
@@ -33,16 +33,17 @@ fn get_yamls(search_dir: &str) -> Result<Vec<DirEntry>, Box<dyn Error>> {
 fn get_testfile_from_entry(search_dir: &str, entry: DirEntry) -> Result<TestFile, Box<dyn Error>> {
     let file = fs::File::open(entry.path())?;
 
-    let test_name = get_testfile_name(search_dir, entry.path());
+    let testfile_name = get_testfile_name(search_dir, entry.path());
 
     let mut result = TestFile {
-        name: test_name,
+        name: testfile_name.clone(),
         tests: vec![],
     };
 
     for document in serde_yaml::Deserializer::from_reader(file) {
         let value = Value::deserialize(document)?;
-        let test_case: TestCase = serde_yaml::from_value(value)?;
+        let mut test_case: TestCase = serde_yaml::from_value(value)?;
+        test_case.name = format!("{}::{}", testfile_name, test_case.name);
         result.tests.push(test_case);
     }
     Ok(result)

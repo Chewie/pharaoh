@@ -111,7 +111,6 @@ fn test_search_in_specific_directory() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-#[ignore]
 fn test_trivial_yaml() -> Result<(), Box<dyn Error>> {
     // GIVEN
     let (mut cmd, tmp) = command_in_tmpdir()?;
@@ -135,6 +134,39 @@ fn test_trivial_yaml() -> Result<(), Box<dyn Error>> {
             Running tests for foo
             test foo::trivial1 ... OK
             test foo::trivial2 ... OK
+         "#});
+    Ok(())
+}
+
+#[test]
+fn test_failing_testcase() -> Result<(), Box<dyn Error>> {
+    // GIVEN
+    let (mut cmd, tmp) = command_in_tmpdir()?;
+
+    let mut file = File::create(tmp.path().join("foo.yaml"))?;
+    file.write_all(
+        indoc! {r#"
+        name: failure
+        cmd: echo foo
+    "#}
+        .as_bytes(),
+    )?;
+    // WHEN
+    let assert = cmd.assert();
+
+    // THEN
+    assert.success().stderr("").stdout(indoc! {r#"
+            Running tests for foo
+            test foo::failure ... FAILED
+
+            failures:
+
+            ---- foo::failure ----
+            stdout differs:
+            --- expected
+            +++ actual
+            +foo
+
          "#});
     Ok(())
 }
