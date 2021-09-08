@@ -1,0 +1,9 @@
+name: success
+cmd: echo foo
+stdout: |
+  foo
+---
+name: failure
+cmd: echo fou
+stdout: |
+  foo
