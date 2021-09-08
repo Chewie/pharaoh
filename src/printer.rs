@@ -63,19 +63,20 @@ fn compute_diff(name: &str, expected: &str, actual: &str) -> String {
         diff_summary.push(formatdoc!(
             r#"
             {} differs:
-            --- expected
-            +++ actual
+            {} expected
+            {} actual
             "#,
-            name.yellow()
+            name.yellow(),
+            "---".green(),
+            "+++".red(),
         ));
     }
     for change in diff.iter_all_changes() {
-        let sign = match change.tag() {
-            ChangeTag::Delete => "-",
-            ChangeTag::Insert => "+",
-            ChangeTag::Equal => " ",
-        };
-        diff_summary.push(format!("{}{}", sign, change));
+        diff_summary.push(match change.tag() {
+            ChangeTag::Delete => format!("-{}", change).green().to_string(),
+            ChangeTag::Insert => format!("+{}", change).red().to_string(),
+            ChangeTag::Equal => format!(" {}", change),
+        });
     }
     diff_summary.join("")
 }
@@ -137,14 +138,18 @@ mod tests {
         let summary = compute_summary(&result);
 
         // THEN
+        let diff = format!("{}{}", "-foo\n".green(), "+fou\n".red());
+
         assert_eq!(
             formatdoc! {r#"
-            {} differs:
-            --- expected
-            +++ actual
-            -foo
-            +fou
-            "#, "stdout".yellow()},
+            {stdout} differs:
+            {expected} expected
+            {actual} actual
+            {diff}"#,
+            stdout="stdout".yellow(),
+            expected="---".green(),
+            actual="+++".red(),
+            diff=diff},
             summary
         );
     }
@@ -160,14 +165,18 @@ mod tests {
         let summary = compute_summary(&result);
 
         // THEN
+        let diff = format!("{}{}", "-foo\n".green(), "+fou\n".red());
+
         assert_eq!(
             formatdoc! {r#"
-            {} differs:
-            --- expected
-            +++ actual
-            -foo
-            +fou
-            "#, "stderr".yellow()},
+            {stderr} differs:
+            {expected} expected
+            {actual} actual
+            {diff}"#,
+            stderr="stderr".yellow(),
+            expected="---".green(),
+            actual="+++".red(),
+            diff=diff},
             summary
         );
     }
@@ -189,25 +198,27 @@ mod tests {
         let summary = compute_summary(&result);
 
         // THEN
+        let stdout_diff = format!("{}{}", "-foo\n".green(), "+fou\n".red());
+        let stderr_diff = format!("{}{}", "-bar\n".green(), "+baz\n".red());
         assert_eq!(
             formatdoc! {r#"
-                {} differs:
+                {status_code} differs:
                 expected: 0
                 actual: 1
-                {} differs:
-                --- expected
-                +++ actual
-                -foo
-                +fou
-                {} differs:
-                --- expected
-                +++ actual
-                -bar
-                +baz
-                "#,
-            "status code".yellow(),
-            "stdout".yellow(),
-            "stderr".yellow()},
+                {stdout} differs:
+                {expected} expected
+                {actual} actual
+                {stdout_diff}{stderr} differs:
+                {expected} expected
+                {actual} actual
+                {stderr_diff}"#,
+            status_code="status code".yellow(),
+            stdout="stdout".yellow(),
+            stderr="stderr".yellow(),
+            expected="---".green(),
+            actual="+++".red(),
+            stdout_diff=stdout_diff,
+            stderr_diff=stderr_diff},
             summary
         );
     }
