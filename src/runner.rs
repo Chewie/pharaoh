@@ -1,4 +1,5 @@
 use std::process::{Command, Output, Stdio};
+use std::io::Write;
 
 use crate::testcase::{TestCase, TestFile};
 
@@ -53,11 +54,16 @@ pub fn run_all_tests(testfiles: &[TestFile]) -> Result<TestReport, std::io::Erro
 }
 
 fn run_testcase(testcase: &TestCase) -> Result<Output, std::io::Error> {
-    let child = Command::new("/bin/sh")
+    let mut child = Command::new("/bin/sh")
         .args(vec!["-c", &testcase.cmd])
+        .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()?;
+
+    let child_stdin = child.stdin.as_mut().unwrap();
+    child_stdin.write_all(testcase.stdin.as_bytes())?;
+    //drop(child_stdin);
 
     child.wait_with_output()
 }

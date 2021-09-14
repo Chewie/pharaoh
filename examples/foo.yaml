@@ -7,3 +7,10 @@ name: failure
 cmd: echo fou
 stdout: |
   foo
+---
+name: cat should work
+cmd: cat
+stdin: |
+  this is a line
+stdout: |
+  this is a line

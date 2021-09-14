@@ -170,3 +170,31 @@ fn test_failing_testcase() -> Result<(), Box<dyn Error>> {
          "#});
     Ok(())
 }
+
+#[test]
+fn test_stdin() -> Result<(), Box<dyn Error>> {
+    // GIVEN
+    let (mut cmd, tmp) = command_in_tmpdir()?;
+
+    let mut file = File::create(tmp.path().join("foo.yaml"))?;
+    file.write_all(
+        indoc! {r#"
+        name: cat should work
+        cmd: cat
+        stdin: |
+          this is a line
+        stdout: |
+          this is a line
+    "#}
+        .as_bytes(),
+    )?;
+    // WHEN
+    let assert = cmd.assert();
+
+    // THEN
+    assert.success().stderr("").stdout(indoc! {r#"
+            Running tests for foo
+            test foo::cat should work ... OK
+         "#});
+    Ok(())
+}
