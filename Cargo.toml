@@ -2,6 +2,7 @@
 name = "pharaoh"
 version = "0.1.0"
 authors = ["Kévin Sztern <sztern.kevin@gmail.com>"]
+license = "MIT"
 edition = "2018"
 description = "A dead simple functional testing tool for command line applications"
 readme = "README.md"
