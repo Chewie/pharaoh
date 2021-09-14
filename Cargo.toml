@@ -3,6 +3,12 @@ name = "pharaoh"
 version = "0.1.0"
 authors = ["Kévin Sztern <sztern.kevin@gmail.com>"]
 edition = "2018"
+description = "A dead simple functional testing tool for command line applications"
+readme = "README.md"
+homepage = "https://github.com/chewie/pharaoh"
+repository = "https://github.com/chewie/pharaoh"
+keywords = ["testing", "cli"]
+categories = ["development-tools::testing"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
