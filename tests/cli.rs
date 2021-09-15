@@ -119,10 +119,10 @@ fn test_trivial_yaml() -> Result<(), Box<dyn Error>> {
     file.write_all(
         indoc! {r#"
         name: trivial1
-        cmd: echo -n
+        cmd: printf ''
         ---
         name: trivial2
-        cmd: echo -n
+        cmd: printf ''
     "#}
         .as_bytes(),
     )?;
@@ -147,7 +147,7 @@ fn test_failing_testcase() -> Result<(), Box<dyn Error>> {
     file.write_all(
         indoc! {r#"
         name: failure
-        cmd: echo foo
+        cmd: printf 'foo\n'
     "#}
         .as_bytes(),
     )?;

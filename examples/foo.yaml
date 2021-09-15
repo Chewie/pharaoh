@@ -1,10 +1,10 @@
 name: success
-cmd: echo foo
+cmd: printf 'foo\n'
 stdout: |
   foo
 ---
 name: failure
-cmd: echo fou
+cmd: printf 'fou\n'
 stdout: |
   foo
 ---
