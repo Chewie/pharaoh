@@ -2,27 +2,28 @@ name: ci
 on: [push, pull_request]
 
 jobs:
-  check:
-    name: Check
-    runs-on: ubuntu-latest
+  test:
+    name: Test
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-musl
+          - arm-unknown-linux-gnueabihf
+          - x86_64-apple-darwin
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
+          target: ${{ matrix.target }}
           override: true
       - uses: actions-rs/cargo@v1
         with:
-          command: check
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/cargo@v1
-        with:
+          use-cross: true
           command: test
+          args: --target=${{ matrix.target }}
 
   lints:
     name: Lints
