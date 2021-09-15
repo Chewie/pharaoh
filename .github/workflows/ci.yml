@@ -6,18 +6,24 @@ jobs:
     name: Test
     strategy:
       fail-fast: false
+      # FIXME: there is no easy way to run integration tests for the ARM target
+      # since the hosted runners are only x86_64.
+      # While this removes some coverage, those tests are disabled for now.
       matrix:
-        build: [linux, linux-arm, macos]
+        build:
+          - linux
+          - macos
+          #- linux-arm
         include:
           - build: linux
             os: ubuntu-20.04
             target: x86_64-unknown-linux-musl
-          - build: linux-arm
-            os: ubuntu-20.04
-            target: arm-unknown-linux-gnueabihf
           - build: macos
             os: macos-11
             target: x86_64-apple-darwin
+          #- build: linux-arm
+            #os: ubuntu-20.04
+            #target: arm-unknown-linux-gnueabihf
     runs-on: ${{ matrix.os }}
     env:
       RUST_BACKTRACE: 1
