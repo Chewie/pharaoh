@@ -1,5 +1,5 @@
-use std::process::{Command, Output, Stdio};
 use std::io::Write;
+use std::process::{Command, Output, Stdio};
 
 use crate::testcase::{TestCase, TestFile};
 
