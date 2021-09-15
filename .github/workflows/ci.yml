@@ -73,8 +73,9 @@ jobs:
 
   create-release:
     name: Create release
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: ['test']
+    # Skip for now, to test it out
+    #if: startsWith(github.ref, 'refs/tags/')
+    needs: ['test', 'lint']
     runs-on: ubuntu-20.04
     env:
       APP_VERSION: TEST_0.0.0
