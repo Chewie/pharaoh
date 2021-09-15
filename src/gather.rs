@@ -23,6 +23,7 @@ fn get_yamls(search_dir: &str) -> Result<Vec<DirEntry>, Box<dyn Error>> {
     Ok(
         GlobWalkerBuilder::from_patterns(search_dir, &["**/*.yaml", "**/*.yml"])
             .min_depth(1)
+            .sort_by(|a, b| a.path().cmp(b.path()))
             .build()?
             .into_iter()
             .filter_map(Result::ok)
