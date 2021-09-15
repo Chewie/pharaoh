@@ -5,6 +5,7 @@ jobs:
   test:
     name: Test
     strategy:
+      fail-fast: false
       matrix:
         build: [linux, linux-arm, macos]
         include:
