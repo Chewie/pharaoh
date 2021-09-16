@@ -82,20 +82,20 @@ jobs:
       #RELEASE_VERSION: TEST_0.0.0
     outputs:
       upload_url: ${{ steps.release.outputs.upload_url }}
-      release_version: ${{ env.RELEASE_VERSION }}
+      release_version: ${{ steps.get_version.outputs.release_version }}
     steps:
       - name: Get the release version from the tag
         if: env.RELEASE_VERSION == ''
-        shell: bash
-        run: echo "RELEASE_VERSION=${GITHUB_REF#ref/tags/}" >> $GITHUB_ENV
+        id: get_version
+        run: echo ::set-output name=release_version::${GITHUB_REF#ref/tags/
       - name: Create GitHub release
         id: release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.RELEASE_VERSION }}
-          release_name: ${{ env.RELEASE_VERSION }}
+          tag_name: ${{ steps.get_version.outputs.release_version }}
+          release_name: ${{ steps.get_version.outputs.release_version }}
 
 
 
