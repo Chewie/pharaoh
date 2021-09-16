@@ -87,7 +87,7 @@ jobs:
       - name: Get the release version from the tag
         if: env.RELEASE_VERSION == ''
         id: get_version
-        run: echo ::set-output name=release_version::${GITHUB_REF#ref/tags/
+        run: echo ::set-output name=release_version::${GITHUB_REF#ref/tags/}
       - name: Create GitHub release
         id: release
         uses: actions/create-release@v1
