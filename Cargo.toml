@@ -1,6 +1,6 @@
 [package]
 name = "pharaoh"
-version = "0.1.0"
+version = "0.1.1-alpha.1"
 authors = ["Kévin Sztern <sztern.kevin@gmail.com>"]
 license = "MIT"
 edition = "2018"
