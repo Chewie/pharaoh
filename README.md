@@ -2,7 +2,7 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/chewie/pharaoh/ci)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/chewie/pharaoh)
-![GitHub](https://img.shields.io/github/license/chewie/pharaoh)
+![Codecov](https://img.shields.io/codecov/c/github/chewie/pharaoh)
 
 ## What it is
 
@@ -47,6 +47,8 @@ For each entry in such a file, Pharaoh will run the given command, feed it the
 specified stdin, and compare the captured output to the specified stdout,
 stderr and exit code. If not specified, these values default to respectively
 empty strings and 0.
+
+## Made in TDD, for TDD
 
 Most often, what you will want to run is the program you are working on, and
 run functional tests over it. Specifically, Pharaoh is made to practice double

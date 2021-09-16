@@ -69,12 +69,33 @@ jobs:
           command: test
           args: --target=${{ matrix.target }}
 
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+      - uses: actions-rs/tarpaulin@v0.1
+        with:
+          version: '0.18.2'
+
+      - uses: codecov/codecov-action@v1.0.2
+
+      - uses: actions/upload-artifcat@v1
+        with:
+          name: code-coverage-report
+          path: cobertura.xml
 
 
   create-release:
     name: Create release
     if: startsWith(github.ref, 'refs/tags/')
-    needs: ['test', 'lint']
+    needs: ['test', 'lint', 'coverage']
     runs-on: ubuntu-20.04
     # Only use this for tests
     #env:
