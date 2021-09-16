@@ -145,7 +145,7 @@ jobs:
             "$PWD/target:/target:Z" \
             rustembedded/cross:arm-unknown-linux-gnueabihf \
             arm-linux-gnueabihf-strip \
-            "/target/arm/unknown-linux-gnueabihf/release/${{ env.APP_NAME }}"
+            "/target/arm-unknown-linux-gnueabihf/release/${{ env.APP_NAME }}"
 
       - name: Upload release binary
         uses: actions/upload-release-asset@v1.0.1
