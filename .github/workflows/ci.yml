@@ -78,13 +78,13 @@ jobs:
     needs: ['test', 'lint']
     runs-on: ubuntu-20.04
     env:
-      APP_VERSION: TEST_0.0.0
+      RELEASE_VERSION: TEST_0.0.0
     outputs:
       upload_url: ${{ steps.release.outputs.upload_url }}
       release_version: ${{ env.RELEASE_VERSION }}
     steps:
       - name: Get the release version from the tag
-        if: env.APP_VERSION == ''
+        if: env.RELEASE_VERSION == ''
         shell: bash
         run: echo "RELEASE_VERSION=${GITHUB_REF#ref/tags/}" >> $GITHUB_ENV
       - name: Create GitHub release
@@ -94,7 +94,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
-          release_name: ${{ env.RG_VERSION }}
+          release_name: ${{ env.RELEASE_VERSION }}
 
 
 
@@ -153,5 +153,5 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: "target/${{ matrix.target }}/releases/${{ env.APP_NAME }}"
-          asset_name: "${{ env.APP_NAME }}-${{ env.APP_VERSION }}-${{ matrix.target }}"
+          asset_name: "${{ env.APP_NAME }}-${{ env.RELEASE_VERSION }}-${{ matrix.target }}"
           asset_content_type: application/octet-stream
