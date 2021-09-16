@@ -1,5 +1,9 @@
 # Pharaoh : build that test pyramid!
 
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/chewie/pharaoh/ci)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/chewie/pharaoh)
+![GitHub](https://img.shields.io/github/license/chewie/pharaoh)
+
 ## What it is
 
 Pharaoh is a dead simple, no permission needed, functional test runner for
