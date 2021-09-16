@@ -85,6 +85,8 @@ jobs:
           version: '0.18.2'
 
       - uses: codecov/codecov-action@v1.0.2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - uses: actions/upload-artifact@v1
         with:
