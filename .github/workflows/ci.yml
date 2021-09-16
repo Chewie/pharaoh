@@ -147,7 +147,7 @@ jobs:
             "/target/arm/unknown-linux-gnueabihf/release/${{ env.APP_NAME }}"
 
       - name: Upload release binary
-        uses: actions/upload-release-assert@v1.0.1
+        uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
