@@ -16,12 +16,12 @@ An example YAML is as follow:
 
 ~~~yaml
 name: this test will succeed
-cmd: echo foo
+cmd: printf 'foo\n'
 stdout: |
   foo
 ---
 name: this test will fail
-cmd: echo fou
+cmd: printf 'fou\n'
 stdout: |
   foo
 ---

@@ -1,9 +1,9 @@
-name: success
+name: this test will succeed
 cmd: printf 'foo\n'
 stdout: |
   foo
 ---
-name: failure
+name: this test will fail
 cmd: printf 'fou\n'
 stdout: |
   foo
@@ -14,3 +14,13 @@ stdin: |
   this is a line
 stdout: |
   this is a line
+---
+name: failing for all three reasons
+cmd: cat
+stdin: |
+  my input
+stdout: |
+  a different output
+stderr: |
+  an unexpected stderr output
+status: 1
