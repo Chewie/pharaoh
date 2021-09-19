@@ -2,24 +2,28 @@ use std::error::Error;
 
 use clap::{App, Arg};
 
-mod gather;
+mod gatherer;
 mod printer;
 mod runner;
 mod testcase;
+
+use gatherer::{yaml::YamlGatherer, Gatherer};
 
 pub fn run() -> Result<(), Box<dyn Error>> {
     let matches = build_args().get_matches();
 
     let search_dir = matches.value_of("search_dir").unwrap_or(".");
 
-    let testfiles = gather::gather_testfiles(search_dir)?;
+    let gatherer = YamlGatherer::new(search_dir.to_string());
 
-    if testfiles.is_empty() {
+    let testfiles = gatherer.gather()?;
+
+    if testfiles.testsuites.is_empty() {
         println!("No test case found. Exiting.");
         return Ok(());
     }
 
-    let report = runner::run_all_tests(&testfiles)?;
+    let report = runner::run_all_tests(&testfiles.testsuites)?;
 
     printer::print_report(&report);
 

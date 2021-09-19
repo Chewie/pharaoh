@@ -1,7 +1,7 @@
 use std::io::Write;
 use std::process::{Command, Output, Stdio};
 
-use crate::testcase::{TestCase, TestFile};
+use crate::testcase::{TestCase, TestSuite};
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct TestResult {
@@ -44,7 +44,7 @@ pub struct TestReport {
     pub testsuites: Vec<TestSuiteResult>,
 }
 
-pub fn run_all_tests(testfiles: &[TestFile]) -> Result<TestReport, std::io::Error> {
+pub fn run_all_tests(testfiles: &[TestSuite]) -> Result<TestReport, std::io::Error> {
     Ok(TestReport {
         testsuites: testfiles
             .iter()
@@ -68,7 +68,7 @@ fn run_testcase(testcase: &TestCase) -> Result<Output, std::io::Error> {
     child.wait_with_output()
 }
 
-fn run_testfile(testfile: &TestFile) -> Result<TestSuiteResult, std::io::Error> {
+fn run_testfile(testfile: &TestSuite) -> Result<TestSuiteResult, std::io::Error> {
     Ok(TestSuiteResult {
         name: testfile.name.clone(),
         results: testfile
