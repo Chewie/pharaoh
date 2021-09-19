@@ -35,18 +35,23 @@ impl YamlGatherer {
 
         let testsuite_name = self.get_testsuite_name(entry.path());
 
-        let mut result = TestSuite {
+        Ok(TestSuite {
             name: testsuite_name.clone(),
-            tests: vec![],
-        };
+            tests: serde_yaml::Deserializer::from_reader(file)
+                .map(|doc| self.deserialize_document(doc, &testsuite_name))
+                .collect::<Result<Vec<TestCase>, Box<dyn Error>>>()?,
+        })
+    }
 
-        for document in serde_yaml::Deserializer::from_reader(file) {
-            let value = Value::deserialize(document)?;
-            let mut test_case: TestCase = serde_yaml::from_value(value)?;
-            test_case.name = format!("{}::{}", testsuite_name, test_case.name);
-            result.tests.push(test_case);
-        }
-        Ok(result)
+    fn deserialize_document(
+        &self,
+        doc: serde_yaml::Deserializer,
+        testsuite_name: &str,
+    ) -> Result<TestCase, Box<dyn Error>> {
+        let value = Value::deserialize(doc)?;
+        let mut test_case: TestCase = serde_yaml::from_value(value)?;
+        test_case.name = format!("{}::{}", testsuite_name, test_case.name);
+        Ok(test_case)
     }
 
     fn get_testsuite_name(&self, path: &path::Path) -> String {
