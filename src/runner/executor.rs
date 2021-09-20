@@ -8,6 +8,7 @@ pub trait Executor {
     fn execute(&self, testcase: &TestCase) -> Result<Output>;
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct SimpleExecutor {}
 
 impl SimpleExecutor {

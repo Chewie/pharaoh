@@ -79,25 +79,60 @@ mod tests {
     #[test]
     fn test_run_all_tests() {
         // GIVEN
-        let executor = DummyExecutor::new(vec![Ok(Output {
-            status: ExitStatus::from_raw(0 << 8), // Exit status are bits from 8 to 15
-            stdout: "foo\n".as_bytes().to_vec(),
-            stderr: "".as_bytes().to_vec(),
-        })]);
+        let executor = DummyExecutor::new(vec![
+            Ok(Output {
+                status: ExitStatus::from_raw(0 << 8), // Exit status are bits from 8 to 15
+                stdout: "foo\n".as_bytes().to_vec(),
+                stderr: "".as_bytes().to_vec(),
+            }),
+            Ok(Output {
+                status: ExitStatus::from_raw(0 << 8), // Exit status are bits from 8 to 15
+                stdout: "bar\n".as_bytes().to_vec(),
+                stderr: "".as_bytes().to_vec(),
+            }),
+            Ok(Output {
+                status: ExitStatus::from_raw(0 << 8), // Exit status are bits from 8 to 15
+                stdout: "baz\n".as_bytes().to_vec(),
+                stderr: "".as_bytes().to_vec(),
+            }),
+        ]);
         let runner = Runner::with_executor(executor);
 
         let collection = TestSuiteCollection {
-            testsuites: vec![TestSuite {
-                name: "mysuite".to_string(),
-                tests: vec![TestCase {
-                    name: "mytest".to_string(),
-                    cmd: "printf 'foo\n'".to_string(),
-                    stdin: "".to_string(),
-                    stdout: "foo\n".to_string(),
-                    stderr: "".to_string(),
-                    status: 0,
-                }],
-            }],
+            testsuites: vec![
+                TestSuite {
+                    name: "mysuite".to_string(),
+                    tests: vec![
+                        TestCase {
+                            name: "mytest".to_string(),
+                            cmd: "printf 'foo\n'".to_string(),
+                            stdin: "".to_string(),
+                            stdout: "foo\n".to_string(),
+                            stderr: "".to_string(),
+                            status: 0,
+                        },
+                        TestCase {
+                            name: "anothertest".to_string(),
+                            cmd: "printf 'bar\n'".to_string(),
+                            stdin: "".to_string(),
+                            stdout: "bar\n".to_string(),
+                            stderr: "".to_string(),
+                            status: 0,
+                        },
+                    ],
+                },
+                TestSuite {
+                    name: "anothersuite".to_string(),
+                    tests: vec![TestCase {
+                        name: "yetanothertest".to_string(),
+                        cmd: "printf 'baz\n'".to_string(),
+                        stdin: "".to_string(),
+                        stdout: "baz\n".to_string(),
+                        stderr: "".to_string(),
+                        status: 0,
+                    }],
+                },
+            ],
         };
 
         // WHEN
@@ -105,20 +140,55 @@ mod tests {
         // THEN
         assert_eq!(
             TestReport {
-                testsuites: vec![TestSuiteResult {
-                    name: "mysuite".to_string(),
-                    results: vec![TestResult {
-                        name: "mytest".to_string(),
-                        expected_stdout: "foo\n".to_string(),
-                        actual_stdout: "foo\n".to_string(),
-                        expected_stderr: "".to_string(),
-                        actual_stderr: "".to_string(),
-                        expected_status: 0,
-                        actual_status: 0
-                    }]
-                }]
+                testsuites: vec![
+                    TestSuiteResult {
+                        name: "mysuite".to_string(),
+                        results: vec![
+                            TestResult {
+                                name: "mytest".to_string(),
+                                expected_stdout: "foo\n".to_string(),
+                                actual_stdout: "foo\n".to_string(),
+                                expected_stderr: "".to_string(),
+                                actual_stderr: "".to_string(),
+                                expected_status: 0,
+                                actual_status: 0
+                            },
+                            TestResult {
+                                name: "anothertest".to_string(),
+                                expected_stdout: "bar\n".to_string(),
+                                actual_stdout: "bar\n".to_string(),
+                                expected_stderr: "".to_string(),
+                                actual_stderr: "".to_string(),
+                                expected_status: 0,
+                                actual_status: 0
+                            },
+                        ]
+                    },
+                    TestSuiteResult {
+                        name: "anothersuite".to_string(),
+                        results: vec![TestResult {
+                            name: "yetanothertest".to_string(),
+                            expected_stdout: "baz\n".to_string(),
+                            actual_stdout: "baz\n".to_string(),
+                            expected_stderr: "".to_string(),
+                            actual_stderr: "".to_string(),
+                            expected_status: 0,
+                            actual_status: 0
+                        },]
+                    },
+                ]
             },
             result
         );
+    }
+
+    #[test]
+    fn test_new_calls_with_executor() {
+        // GIVEN
+        let executor = SimpleExecutor::new();
+        // WHEN
+        let runner = Runner::new();
+        // THEN
+        assert_eq!(executor, runner.executor);
     }
 }
