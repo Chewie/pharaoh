@@ -1,5 +1,4 @@
 use anyhow::Result;
-use std::marker::PhantomData;
 use std::path;
 
 use crate::gatherer::Gatherer;
@@ -11,30 +10,33 @@ mod walker;
 use parser::DefaultParser;
 use walker::DefaultWalker;
 
-pub type YamlGatherer = GenericYamlGatherer<DefaultParser, DefaultWalker>;
-
-pub struct GenericYamlGatherer<Parser: parser::Parser, Walker: walker::Walker> {
+pub struct YamlGatherer<Parser: parser::Parser, Walker: walker::Walker> {
     search_dir: String,
-    _parser_type: PhantomData<Parser>,
-    _walker_type: PhantomData<Walker>,
+    parser: Parser,
+    walker: Walker,
 }
 
-impl<Parser, Walker> GenericYamlGatherer<Parser, Walker>
+impl YamlGatherer<DefaultParser, DefaultWalker> {
+    pub fn new(search_dir: String) -> Self {
+        Self::with_dependencies(search_dir, DefaultParser::new(), DefaultWalker::new())
+    }
+}
+
+impl<Parser, Walker> YamlGatherer<Parser, Walker>
 where
     Parser: parser::Parser,
     Walker: walker::Walker,
 {
-    pub fn new(search_dir: String) -> Self {
-        GenericYamlGatherer {
+    pub fn with_dependencies(search_dir: String, parser: Parser, walker: Walker) -> Self {
+        YamlGatherer {
             search_dir,
-            _parser_type: PhantomData,
-            _walker_type: PhantomData,
+            parser,
+            walker,
         }
     }
-
     fn get_testsuite_from_path(&self, path: &path::Path) -> Result<TestSuite> {
         let testsuite_name = self.get_testsuite_name(path);
-        Parser::from_file(path, testsuite_name)
+        self.parser.from_file(path, testsuite_name)
     }
 
     fn get_testsuite_name(&self, path: &path::Path) -> String {
@@ -46,13 +48,13 @@ where
     }
 }
 
-impl<Parser, Walker> Gatherer for GenericYamlGatherer<Parser, Walker>
+impl<Parser, Walker> Gatherer for YamlGatherer<Parser, Walker>
 where
     Parser: parser::Parser,
     Walker: walker::Walker,
 {
     fn gather(&self) -> Result<TestSuiteCollection> {
-        let entries = Walker::walk(&self.search_dir)?;
+        let entries = self.walker.walk(&self.search_dir)?;
 
         // FIXME: a more elegant way to leave early without collecting into a vec?
         let testsuites: Vec<TestSuite> = entries
@@ -70,8 +72,14 @@ mod tests {
 
     struct DummyParser {}
 
+    impl DummyParser {
+        fn new() -> Self {
+            DummyParser {}
+        }
+    }
+
     impl parser::Parser for DummyParser {
-        fn from_file(_path: &path::Path, name: String) -> Result<TestSuite> {
+        fn from_file(&self, _path: &path::Path, name: String) -> Result<TestSuite> {
             Ok(TestSuite {
                 name,
                 tests: vec![],
@@ -81,18 +89,28 @@ mod tests {
 
     use std::path::PathBuf;
 
-    struct DummyWalker {}
+    struct DummyWalker {
+        dummy_result: Vec<PathBuf>,
+    }
+
+    impl DummyWalker {
+        fn new(dummy_result: Vec<PathBuf>) -> Self {
+            DummyWalker { dummy_result }
+        }
+    }
 
     impl walker::Walker for DummyWalker {
-        fn walk(_search_dir: &str) -> Result<Vec<PathBuf>> {
-            Ok(vec![PathBuf::from("./foo.yaml")])
+        fn walk(&self, _search_dir: &str) -> Result<Vec<PathBuf>> {
+            Ok(self.dummy_result.clone())
         }
     }
 
     #[test]
     fn test_gather() {
         // GIVEN
-        let gatherer = GenericYamlGatherer::<DummyParser, DummyWalker>::new(".".to_string());
+        let parser = DummyParser::new();
+        let walker = DummyWalker::new(vec![PathBuf::from("./foo.yaml")]);
+        let gatherer = YamlGatherer::with_dependencies(".".to_string(), parser, walker);
 
         // WHEN
         let collection = gatherer.gather();

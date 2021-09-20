@@ -3,13 +3,19 @@ use globwalk::GlobWalkerBuilder;
 use std::path::PathBuf;
 
 pub trait Walker {
-    fn walk(search_dir: &str) -> Result<Vec<PathBuf>>;
+    fn walk(&self, search_dir: &str) -> Result<Vec<PathBuf>>;
 }
 
 pub struct DefaultWalker {}
 
+impl DefaultWalker {
+    pub fn new() -> Self {
+        DefaultWalker {}
+    }
+}
+
 impl Walker for DefaultWalker {
-    fn walk(search_dir: &str) -> Result<Vec<PathBuf>> {
+    fn walk(&self, search_dir: &str) -> Result<Vec<PathBuf>> {
         Ok(
             GlobWalkerBuilder::from_patterns(search_dir, &["**/*.yaml", "**/*.yml"])
                 .min_depth(1)

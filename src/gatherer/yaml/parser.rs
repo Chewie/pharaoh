@@ -7,13 +7,17 @@ use std::path;
 use crate::testcase::{TestCase, TestSuite};
 
 pub trait Parser {
-    fn from_file(path: &path::Path, name: String) -> Result<TestSuite>;
+    fn from_file(&self, path: &path::Path, name: String) -> Result<TestSuite>;
 }
 
 pub struct DefaultParser {}
 
 impl DefaultParser {
-    pub fn from_reader(reader: &mut impl std::io::Read, name: String) -> Result<TestSuite> {
+    pub fn new() -> Self {
+        DefaultParser {}
+    }
+
+    pub fn from_reader(&self, reader: &mut impl std::io::Read, name: String) -> Result<TestSuite> {
         Ok(TestSuite {
             tests: serde_yaml::Deserializer::from_reader(reader)
                 .map(|doc| {
@@ -29,10 +33,10 @@ impl DefaultParser {
 }
 
 impl Parser for DefaultParser {
-    fn from_file(path: &path::Path, name: String) -> Result<TestSuite> {
+    fn from_file(&self, path: &path::Path, name: String) -> Result<TestSuite> {
         let mut file = fs::File::open(path)?;
 
-        Self::from_reader(&mut file, name)
+        self.from_reader(&mut file, name)
     }
 }
 
@@ -45,6 +49,7 @@ mod tests {
 
     #[test]
     fn test_from_reader() {
+        // GIVEN
         let mut doc = Cursor::new(indoc! {r#"
             name: cat should work
             cmd: cat
@@ -55,8 +60,14 @@ mod tests {
             status: 0
         "#});
 
-        let result = DefaultParser::from_reader(&mut doc, "mytestsuite".to_string()).unwrap();
+        let parser = DefaultParser::new();
 
+        // WHEN
+        let result = parser
+            .from_reader(&mut doc, "mytestsuite".to_string())
+            .unwrap();
+
+        // THEN
         assert_eq!(
             TestSuite {
                 name: "mytestsuite".to_string(),
@@ -74,6 +85,7 @@ mod tests {
     }
     #[test]
     fn test_from_reader_multiple_documents() {
+        // GIVEN
         let mut doc = Cursor::new(indoc! {r#"
             name: a first test
             cmd: echo
@@ -82,8 +94,14 @@ mod tests {
             cmd: printf
         "#});
 
-        let result = DefaultParser::from_reader(&mut doc, "mytestsuite".to_string()).unwrap();
+        let parser = DefaultParser::new();
 
+        // WHEN
+        let result = parser
+            .from_reader(&mut doc, "mytestsuite".to_string())
+            .unwrap();
+
+        // THEN
         assert_eq!(
             TestSuite {
                 name: "mytestsuite".to_string(),
@@ -112,12 +130,17 @@ mod tests {
 
     #[test]
     fn test_from_reader_invalid_yaml() {
+        // GIVEN
         let mut doc = Cursor::new(indoc! {r#"
             foo: bar
         "#});
 
-        let result = DefaultParser::from_reader(&mut doc, "testsuite".to_string());
+        let parser = DefaultParser::new();
 
+        // WHEN
+        let result = parser.from_reader(&mut doc, "testsuite".to_string());
+
+        // THEN
         assert!(result.is_err());
     }
 }
