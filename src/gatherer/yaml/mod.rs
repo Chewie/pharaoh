@@ -1,11 +1,12 @@
+use anyhow::Result;
+use globwalk::{DirEntry, GlobWalkerBuilder};
 use std::fs;
 use std::path;
 
-use globwalk::{DirEntry, GlobWalkerBuilder};
-
 use crate::gatherer::Gatherer;
 use crate::testcase::{TestSuite, TestSuiteCollection};
-use anyhow::Result;
+
+mod parser;
 
 pub struct YamlGatherer {
     search_dir: String,
@@ -33,7 +34,7 @@ impl YamlGatherer {
 
         let testsuite_name = self.get_testsuite_name(entry.path());
 
-        TestSuite::from_reader(&mut file, testsuite_name)
+        parser::from_reader(&mut file, testsuite_name)
     }
 
     fn get_testsuite_name(&self, path: &path::Path) -> String {
