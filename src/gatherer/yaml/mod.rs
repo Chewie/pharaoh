@@ -119,4 +119,18 @@ mod tests {
             collection.unwrap()
         );
     }
+
+    #[test]
+    fn test_new_calls_with_dependencies() {
+        // GIVEN
+        let parser = DefaultParser::new();
+        let walker = DefaultWalker::new();
+
+        // WHEN
+        let gatherer = YamlGatherer::new(".".to_string());
+
+        // THEN
+        assert_eq!(parser, gatherer.parser);
+        assert_eq!(walker, gatherer.walker);
+    }
 }
