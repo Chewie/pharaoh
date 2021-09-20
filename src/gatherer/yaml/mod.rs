@@ -5,6 +5,7 @@ use crate::gatherer::Gatherer;
 use crate::testcase::{TestSuite, TestSuiteCollection};
 
 mod parser;
+mod utils;
 mod walker;
 
 use parser::DefaultParser;
@@ -35,16 +36,8 @@ where
         }
     }
     fn get_testsuite_from_path(&self, path: &path::Path) -> Result<TestSuite> {
-        let testsuite_name = self.get_testsuite_name(path);
+        let testsuite_name = utils::get_stem(path, &self.search_dir);
         self.parser.from_file(path, testsuite_name)
-    }
-
-    fn get_testsuite_name(&self, path: &path::Path) -> String {
-        let filename = path.with_extension("");
-        let filename = filename.strip_prefix(&self.search_dir).unwrap(); // Cannot fail
-        let filename = filename.display().to_string();
-
-        filename
     }
 }
 
@@ -60,7 +53,7 @@ where
         let testsuites: Vec<TestSuite> = entries
             .into_iter()
             .map(|path| self.get_testsuite_from_path(&path))
-            .collect::<Result<_, _>>()?;
+            .collect::<Result<_>>()?;
 
         Ok(TestSuiteCollection::new(testsuites.into_iter()))
     }
@@ -125,45 +118,5 @@ mod tests {
             },
             collection.unwrap()
         );
-    }
-
-    #[test]
-    fn test_get_name_with_leading_dot() {
-        let gatherer = YamlGatherer::new(".".to_string());
-        let path = path::Path::new("./foo.yaml");
-
-        assert_eq!("foo", gatherer.get_testsuite_name(path));
-    }
-
-    #[test]
-    fn test_get_name_subdir() {
-        let gatherer = YamlGatherer::new("foo".to_string());
-        let path = path::Path::new("foo/bar.yaml");
-
-        assert_eq!("bar", gatherer.get_testsuite_name(path));
-    }
-
-    #[test]
-    fn test_get_name_subdir_trailing_slash() {
-        let gatherer = YamlGatherer::new("foo/".to_string());
-        let path = path::Path::new("foo/bar.yaml");
-
-        assert_eq!("bar", gatherer.get_testsuite_name(path));
-    }
-
-    #[test]
-    fn test_get_name_sub_yaml() {
-        let gatherer = YamlGatherer::new(".".to_string());
-        let path = path::Path::new("./foo/bar.yaml");
-
-        assert_eq!("foo/bar", gatherer.get_testsuite_name(path));
-    }
-
-    #[test]
-    fn test_get_name_sub_yaml_in_subdir() {
-        let gatherer = YamlGatherer::new("subdir/".to_string());
-        let path = path::Path::new("subdir/foo/bar.yaml");
-
-        assert_eq!("foo/bar", gatherer.get_testsuite_name(path));
     }
 }
