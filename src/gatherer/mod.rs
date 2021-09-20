@@ -1,8 +1,8 @@
 use crate::testcase::TestSuiteCollection;
-use std::error::Error;
+use anyhow::Result;
 
 pub mod yaml;
 
 pub trait Gatherer {
-    fn gather(&self) -> Result<TestSuiteCollection, Box<dyn Error>>;
+    fn gather(&self) -> Result<TestSuiteCollection>;
 }

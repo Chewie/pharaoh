@@ -1,13 +1,11 @@
-use std::error::Error;
 use std::fs;
 use std::path;
 
 use globwalk::{DirEntry, GlobWalkerBuilder};
-use serde::Deserialize;
-use serde_yaml::Value;
 
 use crate::gatherer::Gatherer;
-use crate::testcase::{TestCase, TestSuite, TestSuiteCollection};
+use crate::testcase::{TestSuite, TestSuiteCollection};
+use anyhow::Result;
 
 pub struct YamlGatherer {
     search_dir: String,
@@ -18,7 +16,7 @@ impl YamlGatherer {
         YamlGatherer { search_dir }
     }
 
-    fn get_yamls(&self) -> Result<Vec<DirEntry>, Box<dyn Error>> {
+    fn get_yamls(&self) -> Result<Vec<DirEntry>> {
         Ok(
             GlobWalkerBuilder::from_patterns(&self.search_dir, &["**/*.yaml", "**/*.yml"])
                 .min_depth(1)
@@ -30,28 +28,12 @@ impl YamlGatherer {
         )
     }
 
-    fn get_testsuite_from_entry(&self, entry: DirEntry) -> Result<TestSuite, Box<dyn Error>> {
-        let file = fs::File::open(entry.path())?;
+    fn get_testsuite_from_entry(&self, entry: DirEntry) -> Result<TestSuite> {
+        let mut file = fs::File::open(entry.path())?;
 
         let testsuite_name = self.get_testsuite_name(entry.path());
 
-        Ok(TestSuite {
-            name: testsuite_name.clone(),
-            tests: serde_yaml::Deserializer::from_reader(file)
-                .map(|doc| self.deserialize_document(doc, &testsuite_name))
-                .collect::<Result<Vec<TestCase>, Box<dyn Error>>>()?,
-        })
-    }
-
-    fn deserialize_document(
-        &self,
-        doc: serde_yaml::Deserializer,
-        testsuite_name: &str,
-    ) -> Result<TestCase, Box<dyn Error>> {
-        let value = Value::deserialize(doc)?;
-        let mut test_case: TestCase = serde_yaml::from_value(value)?;
-        test_case.name = format!("{}::{}", testsuite_name, test_case.name);
-        Ok(test_case)
+        TestSuite::from_reader(&mut file, testsuite_name)
     }
 
     fn get_testsuite_name(&self, path: &path::Path) -> String {
@@ -64,7 +46,7 @@ impl YamlGatherer {
 }
 
 impl Gatherer for YamlGatherer {
-    fn gather(&self) -> Result<TestSuiteCollection, Box<dyn Error>> {
+    fn gather(&self) -> Result<TestSuiteCollection> {
         let entries = self.get_yamls()?;
 
         let mut result: Vec<TestSuite> = vec![];
