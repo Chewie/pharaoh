@@ -5,9 +5,10 @@ use clap::{App, Arg};
 mod gatherer;
 mod printer;
 mod runner;
-mod testcase;
+mod types;
 
 use gatherer::{yaml::YamlGatherer, Gatherer};
+use runner::Runner;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
     let matches = build_args().get_matches();
@@ -16,14 +17,15 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 
     let gatherer = YamlGatherer::new(search_dir.to_string());
 
-    let testfiles = gatherer.gather()?;
+    let collection = gatherer.gather()?;
 
-    if testfiles.testsuites.is_empty() {
+    if collection.testsuites.is_empty() {
         println!("No test case found. Exiting.");
         return Ok(());
     }
 
-    let report = runner::run_all_tests(&testfiles.testsuites)?;
+    let runner = Runner::new();
+    let report = runner.run_all_tests(collection)?;
 
     printer::print_report(&report);
 

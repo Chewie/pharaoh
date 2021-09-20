@@ -2,7 +2,7 @@ use anyhow::Result;
 use std::path;
 
 use crate::gatherer::Gatherer;
-use crate::testcase::{TestSuite, TestSuiteCollection};
+use crate::types::testcase::{TestSuite, TestSuiteCollection};
 
 mod parser;
 mod utils;

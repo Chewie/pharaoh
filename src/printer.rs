@@ -2,7 +2,7 @@ use colored::Colorize;
 use indoc::{formatdoc, printdoc};
 use similar::{ChangeTag, TextDiff};
 
-use crate::runner::{TestReport, TestResult};
+use crate::types::result::{TestReport, TestResult};
 
 pub fn print_report(report: &TestReport) {
     let mut failures = vec![];
@@ -93,6 +93,20 @@ fn format_oneliner(result: &TestResult, success: bool) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    impl TestResult {
+        fn from_name(name: &str) -> Self {
+            TestResult {
+                name: name.to_string(),
+                expected_stdout: "".to_string(),
+                actual_stdout: "".to_string(),
+                expected_stderr: "".to_string(),
+                actual_stderr: "".to_string(),
+                expected_status: 0,
+                actual_status: 0,
+            }
+        }
+    }
 
     #[test]
     fn test_compute_summary_successful() {

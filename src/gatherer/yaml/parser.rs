@@ -4,7 +4,7 @@ use serde_yaml::Value;
 use std::fs;
 use std::path;
 
-use crate::testcase::{TestCase, TestSuite};
+use crate::types::testcase::{TestCase, TestSuite};
 
 pub trait Parser {
     fn from_file(&self, path: &path::Path, name: String) -> Result<TestSuite>;

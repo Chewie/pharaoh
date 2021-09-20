@@ -1,4 +1,4 @@
-use crate::testcase::TestSuiteCollection;
+use crate::types::testcase::TestSuiteCollection;
 use anyhow::Result;
 
 pub mod yaml;
