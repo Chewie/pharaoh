@@ -1,21 +1,39 @@
 use anyhow::Result;
 use serde::Deserialize;
 use serde_yaml::Value;
+use std::fs;
+use std::path;
 
 use crate::testcase::{TestCase, TestSuite};
 
-pub fn from_reader(reader: &mut impl std::io::Read, name: String) -> Result<TestSuite> {
-    Ok(TestSuite {
-        tests: serde_yaml::Deserializer::from_reader(reader)
-            .map(|doc| {
-                let value = Value::deserialize(doc)?;
-                let mut test_case: TestCase = serde_yaml::from_value(value)?;
-                test_case.name = format!("{}::{}", name, test_case.name);
-                Ok(test_case)
-            })
-            .collect::<Result<Vec<TestCase>>>()?,
-        name,
-    })
+pub trait Parser {
+    fn from_file(path: &path::Path, name: String) -> Result<TestSuite>;
+}
+
+pub struct DefaultParser {}
+
+impl DefaultParser {
+    pub fn from_reader(reader: &mut impl std::io::Read, name: String) -> Result<TestSuite> {
+        Ok(TestSuite {
+            tests: serde_yaml::Deserializer::from_reader(reader)
+                .map(|doc| {
+                    let value = Value::deserialize(doc)?;
+                    let mut test_case: TestCase = serde_yaml::from_value(value)?;
+                    test_case.name = format!("{}::{}", name, test_case.name);
+                    Ok(test_case)
+                })
+                .collect::<Result<Vec<TestCase>>>()?,
+            name,
+        })
+    }
+}
+
+impl Parser for DefaultParser {
+    fn from_file(path: &path::Path, name: String) -> Result<TestSuite> {
+        let mut file = fs::File::open(path)?;
+
+        Self::from_reader(&mut file, name)
+    }
 }
 
 #[cfg(test)]
@@ -37,7 +55,7 @@ mod tests {
             status: 0
         "#});
 
-        let result = from_reader(&mut doc, "mytestsuite".to_string()).unwrap();
+        let result = DefaultParser::from_reader(&mut doc, "mytestsuite".to_string()).unwrap();
 
         assert_eq!(
             TestSuite {
@@ -64,7 +82,7 @@ mod tests {
             cmd: printf
         "#});
 
-        let result = from_reader(&mut doc, "mytestsuite".to_string()).unwrap();
+        let result = DefaultParser::from_reader(&mut doc, "mytestsuite".to_string()).unwrap();
 
         assert_eq!(
             TestSuite {
@@ -98,7 +116,7 @@ mod tests {
             foo: bar
         "#});
 
-        let result = from_reader(&mut doc, "testsuite".to_string());
+        let result = DefaultParser::from_reader(&mut doc, "testsuite".to_string());
 
         assert!(result.is_err());
     }

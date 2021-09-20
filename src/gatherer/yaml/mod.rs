@@ -1,40 +1,40 @@
 use anyhow::Result;
-use globwalk::{DirEntry, GlobWalkerBuilder};
-use std::fs;
+use std::marker::PhantomData;
 use std::path;
 
 use crate::gatherer::Gatherer;
 use crate::testcase::{TestSuite, TestSuiteCollection};
 
 mod parser;
+mod walker;
 
-pub struct YamlGatherer {
+use parser::DefaultParser;
+use walker::DefaultWalker;
+
+pub type YamlGatherer = GenericYamlGatherer<DefaultParser, DefaultWalker>;
+
+pub struct GenericYamlGatherer<Parser: parser::Parser, Walker: walker::Walker> {
     search_dir: String,
+    _parser_type: PhantomData<Parser>,
+    _walker_type: PhantomData<Walker>,
 }
 
-impl YamlGatherer {
+impl<Parser, Walker> GenericYamlGatherer<Parser, Walker>
+where
+    Parser: parser::Parser,
+    Walker: walker::Walker,
+{
     pub fn new(search_dir: String) -> Self {
-        YamlGatherer { search_dir }
+        GenericYamlGatherer {
+            search_dir,
+            _parser_type: PhantomData,
+            _walker_type: PhantomData,
+        }
     }
 
-    fn get_yamls(&self) -> Result<Vec<DirEntry>> {
-        Ok(
-            GlobWalkerBuilder::from_patterns(&self.search_dir, &["**/*.yaml", "**/*.yml"])
-                .min_depth(1)
-                .sort_by(|a, b| a.path().cmp(b.path()))
-                .build()?
-                .into_iter()
-                .filter_map(Result::ok)
-                .collect(),
-        )
-    }
-
-    fn get_testsuite_from_entry(&self, entry: DirEntry) -> Result<TestSuite> {
-        let mut file = fs::File::open(entry.path())?;
-
-        let testsuite_name = self.get_testsuite_name(entry.path());
-
-        parser::from_reader(&mut file, testsuite_name)
+    fn get_testsuite_from_path(&self, path: &path::Path) -> Result<TestSuite> {
+        let testsuite_name = self.get_testsuite_name(path);
+        Parser::from_file(path, testsuite_name)
     }
 
     fn get_testsuite_name(&self, path: &path::Path) -> String {
@@ -46,14 +46,18 @@ impl YamlGatherer {
     }
 }
 
-impl Gatherer for YamlGatherer {
+impl<Parser, Walker> Gatherer for GenericYamlGatherer<Parser, Walker>
+where
+    Parser: parser::Parser,
+    Walker: walker::Walker,
+{
     fn gather(&self) -> Result<TestSuiteCollection> {
-        let entries = self.get_yamls()?;
+        let entries = Walker::walk(&self.search_dir)?;
 
         // FIXME: a more elegant way to leave early without collecting into a vec?
         let testsuites: Vec<TestSuite> = entries
             .into_iter()
-            .map(|entry| self.get_testsuite_from_entry(entry))
+            .map(|path| self.get_testsuite_from_path(&path))
             .collect::<Result<_, _>>()?;
 
         Ok(TestSuiteCollection::new(testsuites.into_iter()))
@@ -63,6 +67,47 @@ impl Gatherer for YamlGatherer {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    struct DummyParser {}
+
+    impl parser::Parser for DummyParser {
+        fn from_file(_path: &path::Path, name: String) -> Result<TestSuite> {
+            Ok(TestSuite {
+                name,
+                tests: vec![],
+            })
+        }
+    }
+
+    use std::path::PathBuf;
+
+    struct DummyWalker {}
+
+    impl walker::Walker for DummyWalker {
+        fn walk(_search_dir: &str) -> Result<Vec<PathBuf>> {
+            Ok(vec![PathBuf::from("./foo.yaml")])
+        }
+    }
+
+    #[test]
+    fn test_gather() {
+        // GIVEN
+        let gatherer = GenericYamlGatherer::<DummyParser, DummyWalker>::new(".".to_string());
+
+        // WHEN
+        let collection = gatherer.gather();
+
+        // THEN
+        assert_eq!(
+            TestSuiteCollection {
+                testsuites: vec![TestSuite {
+                    name: "foo".to_string(),
+                    tests: vec![]
+                }]
+            },
+            collection.unwrap()
+        );
+    }
 
     #[test]
     fn test_get_name_with_leading_dot() {
