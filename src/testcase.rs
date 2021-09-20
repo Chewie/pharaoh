@@ -39,6 +39,58 @@ pub struct TestSuite {
 ///
 /// This usually represents the entirety of your tests, for example all the YAML files in a given
 /// directory.
+#[derive(Eq, PartialEq, Debug)]
 pub struct TestSuiteCollection {
     pub testsuites: Vec<TestSuite>,
+}
+
+impl TestSuiteCollection {
+    pub fn new<I>(testsuites: I) -> Self
+    where
+        I: IntoIterator<Item = TestSuite>,
+    {
+        TestSuiteCollection {
+            testsuites: testsuites.into_iter().collect(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_collection_from_testsuites() {
+        // GIVEN
+        let testsuites = vec![
+            TestSuite {
+                name: "suite1".to_string(),
+                tests: vec![],
+            },
+            TestSuite {
+                name: "suite2".to_string(),
+                tests: vec![],
+            },
+        ];
+
+        // WHEN
+        let result = TestSuiteCollection::new(testsuites);
+
+        // THEN
+        assert_eq!(
+            TestSuiteCollection {
+                testsuites: vec![
+                    TestSuite {
+                        name: "suite1".to_string(),
+                        tests: vec![],
+                    },
+                    TestSuite {
+                        name: "suite2".to_string(),
+                        tests: vec![],
+                    }
+                ]
+            },
+            result
+        );
+    }
 }

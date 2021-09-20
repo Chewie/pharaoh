@@ -50,12 +50,13 @@ impl Gatherer for YamlGatherer {
     fn gather(&self) -> Result<TestSuiteCollection> {
         let entries = self.get_yamls()?;
 
-        let mut result: Vec<TestSuite> = vec![];
-        for entry in entries {
-            let testsuite = self.get_testsuite_from_entry(entry)?;
-            result.push(testsuite);
-        }
-        Ok(TestSuiteCollection { testsuites: result })
+        // FIXME: a more elegant way to leave early without collecting into a vec?
+        let testsuites: Vec<TestSuite> = entries
+            .into_iter()
+            .map(|entry| self.get_testsuite_from_entry(entry))
+            .collect::<Result<_, _>>()?;
+
+        Ok(TestSuiteCollection::new(testsuites.into_iter()))
     }
 }
 
