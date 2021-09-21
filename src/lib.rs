@@ -8,6 +8,7 @@ mod runner;
 mod types;
 
 use gatherer::{yaml::YamlGatherer, Gatherer};
+use printer::Printer;
 use runner::Runner;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
@@ -19,15 +20,12 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 
     let collection = gatherer.gather()?;
 
-    if collection.testsuites.is_empty() {
-        println!("No test case found. Exiting.");
-        return Ok(());
-    }
-
     let runner = Runner::new();
     let report = runner.run_all_tests(collection)?;
 
-    printer::print_report(&report);
+    let printer = Printer::new();
+
+    printer.print_report(&report);
 
     Ok(())
 }
