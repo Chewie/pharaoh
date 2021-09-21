@@ -12,9 +12,9 @@ pub trait Formatter {
 #[derive(Eq, PartialEq, Debug)]
 pub struct DefaultFormatter;
 
-impl DefaultFormatter {
-    pub fn new() -> Self {
-        DefaultFormatter {}
+impl Default for DefaultFormatter {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -30,6 +30,9 @@ impl Formatter for DefaultFormatter {
 }
 
 impl DefaultFormatter {
+    pub fn new() -> Self {
+        DefaultFormatter {}
+    }
     fn compute_status(&self, expected: i32, actual: i32) -> String {
         match expected == actual {
             true => String::new(),

@@ -17,6 +17,12 @@ impl SimpleExecutor {
     }
 }
 
+impl Default for SimpleExecutor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Executor for SimpleExecutor {
     fn execute(&self, testcase: &TestCase) -> Result<Output> {
         let mut child = Command::new("/bin/sh")

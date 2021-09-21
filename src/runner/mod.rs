@@ -6,22 +6,16 @@ use crate::types::result::{TestReport, TestResult, TestSuiteResult};
 use crate::types::testcase::{TestCase, TestSuite, TestSuiteCollection};
 use executor::{Executor, SimpleExecutor};
 
-pub struct Runner<E: Executor> {
+pub trait Runner {
+    fn run_all_tests(&self, collection: TestSuiteCollection) -> Result<TestReport>;
+}
+
+pub struct DefaultRunner<E: Executor> {
     executor: E,
 }
 
-impl Runner<SimpleExecutor> {
-    pub fn new() -> Self {
-        Self::with_executor(SimpleExecutor::new())
-    }
-}
-
-impl<E: Executor> Runner<E> {
-    pub fn with_executor(executor: E) -> Self {
-        Runner { executor }
-    }
-
-    pub fn run_all_tests(&self, collection: TestSuiteCollection) -> Result<TestReport> {
+impl<E: Executor> Runner for DefaultRunner<E> {
+    fn run_all_tests(&self, collection: TestSuiteCollection) -> Result<TestReport> {
         Ok(TestReport {
             testsuites: collection
                 .testsuites
@@ -29,6 +23,24 @@ impl<E: Executor> Runner<E> {
                 .map(|testsuite| self.run_testsuite(testsuite))
                 .collect::<Result<_>>()?,
         })
+    }
+}
+
+impl DefaultRunner<SimpleExecutor> {
+    pub fn new() -> Self {
+        Self::with_executor(SimpleExecutor::new())
+    }
+}
+
+impl Default for DefaultRunner<SimpleExecutor> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<E: Executor> DefaultRunner<E> {
+    pub fn with_executor(executor: E) -> Self {
+        DefaultRunner { executor }
     }
 
     fn run_testsuite(&self, testsuite: TestSuite) -> Result<TestSuiteResult> {
@@ -96,7 +108,7 @@ mod tests {
                 stderr: "".as_bytes().to_vec(),
             }),
         ]);
-        let runner = Runner::with_executor(executor);
+        let runner = DefaultRunner::with_executor(executor);
 
         let collection = TestSuiteCollection {
             testsuites: vec![
@@ -187,7 +199,7 @@ mod tests {
         // GIVEN
         let executor = SimpleExecutor::new();
         // WHEN
-        let runner = Runner::new();
+        let runner = DefaultRunner::new();
         // THEN
         assert_eq!(executor, runner.executor);
     }

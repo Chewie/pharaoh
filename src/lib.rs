@@ -1,24 +1,15 @@
 use anyhow::{Context, Result};
 
-use clap::{App, Arg};
+pub mod gatherer;
+pub mod printer;
+pub mod runner;
+pub mod types;
 
-mod gatherer;
-mod printer;
-mod runner;
-mod types;
+pub use gatherer::{Gatherer, YamlGatherer};
+pub use printer::{ColorPrinter, Printer};
+pub use runner::{DefaultRunner, Runner};
 
-use gatherer::{yaml::YamlGatherer, Gatherer};
-use printer::Printer;
-use runner::Runner;
-
-pub fn run() -> Result<()> {
-    let matches = build_args().get_matches();
-    let search_dir = matches.value_of("search_dir").unwrap_or(".");
-
-    let gatherer = YamlGatherer::new(search_dir.to_string());
-    let runner = Runner::new();
-    let printer = Printer::new();
-
+pub fn run(gatherer: impl Gatherer, runner: impl Runner, printer: impl Printer) -> Result<()> {
     let collection = gatherer.gather().context("Failed to parse YAML files")?;
     let report = runner
         .run_all_tests(collection)
@@ -29,8 +20,4 @@ pub fn run() -> Result<()> {
         .context("Failed to write report")?;
 
     Ok(())
-}
-
-fn build_args() -> App<'static, 'static> {
-    App::new("Pharaoh").arg(Arg::with_name("search_dir").index(1).default_value("."))
 }

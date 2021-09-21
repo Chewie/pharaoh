@@ -13,6 +13,12 @@ pub trait Parser {
 #[derive(Eq, PartialEq, Debug)]
 pub struct DefaultParser {}
 
+impl Default for DefaultParser {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DefaultParser {
     pub fn new() -> Self {
         DefaultParser {}

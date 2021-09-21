@@ -9,6 +9,12 @@ pub trait Walker {
 #[derive(Eq, PartialEq, Debug)]
 pub struct DefaultWalker {}
 
+impl Default for DefaultWalker {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DefaultWalker {
     pub fn new() -> Self {
         DefaultWalker {}

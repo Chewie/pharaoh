@@ -1,28 +1,33 @@
 use anyhow::Result;
 use colored::Colorize;
 
-use crate::types::result::TestReport;
-
 mod formatter;
 
+use crate::types::result::TestReport;
 use formatter::{DefaultFormatter, Formatter};
 
-pub struct Printer<F: Formatter> {
+pub trait Printer {
+    fn print_report(&self, report: &TestReport, writer: impl std::io::Write) -> Result<()>;
+}
+
+pub struct ColorPrinter<F: Formatter> {
     formatter: F,
 }
 
-impl Printer<DefaultFormatter> {
+impl ColorPrinter<DefaultFormatter> {
     pub fn new() -> Self {
         Self::with_formatter(DefaultFormatter::new())
     }
 }
 
-impl<F: Formatter> Printer<F> {
-    pub fn with_formatter(formatter: F) -> Self {
-        Printer { formatter }
+impl Default for ColorPrinter<DefaultFormatter> {
+    fn default() -> Self {
+        Self::new()
     }
+}
 
-    pub fn print_report(&self, report: &TestReport, mut writer: impl std::io::Write) -> Result<()> {
+impl<F: Formatter> Printer for ColorPrinter<F> {
+    fn print_report(&self, report: &TestReport, mut writer: impl std::io::Write) -> Result<()> {
         if report.testsuites.is_empty() {
             writeln!(writer, "No test case found. Exiting.")?;
             return Ok(());
@@ -55,6 +60,12 @@ impl<F: Formatter> Printer<F> {
     }
 }
 
+impl<F: Formatter> ColorPrinter<F> {
+    pub fn with_formatter(formatter: F) -> Self {
+        ColorPrinter { formatter }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -69,7 +80,7 @@ mod tests {
         let formatter = DefaultFormatter::new();
 
         // WHEN
-        let printer = Printer::new();
+        let printer = ColorPrinter::new();
 
         // THEN
         assert_eq!(formatter, printer.formatter);
@@ -80,7 +91,7 @@ mod tests {
         // GIVEN
         let report = TestReport { testsuites: vec![] };
         let mut result = Vec::new();
-        let printer = Printer::new();
+        let printer = ColorPrinter::new();
 
         // WHEN
         printer.print_report(&report, &mut result).unwrap();
@@ -105,7 +116,7 @@ mod tests {
             }],
         };
         let mut result = Vec::new();
-        let printer = Printer::new();
+        let printer = ColorPrinter::new();
 
         // WHEN
         printer.print_report(&report, &mut result).unwrap();
@@ -144,7 +155,7 @@ mod tests {
             .times(1)
             .return_const("FAIL\n");
 
-        let printer = Printer::with_formatter(mock_formatter);
+        let printer = ColorPrinter::with_formatter(mock_formatter);
 
         // WHEN
         printer.print_report(&report, &mut result).unwrap();
