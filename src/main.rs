@@ -1,5 +1,5 @@
-use std::error::Error;
+use anyhow::Result;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<()> {
     pharaoh::run()
 }
