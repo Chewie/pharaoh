@@ -1,14 +1,23 @@
-use crate::types::testcase::TestCase;
+use derive_builder::Builder;
 use std::process::Output;
 
-#[derive(Debug, Eq, PartialEq)]
+use crate::types::testcase::TestCase;
+
+#[derive(Debug, Eq, PartialEq, Clone, Builder)]
+#[builder(setter(into))]
 pub struct TestResult {
     pub name: String,
+    #[builder(default)]
     pub expected_stdout: String,
+    #[builder(default)]
     pub actual_stdout: String,
+    #[builder(default)]
     pub expected_stderr: String,
+    #[builder(default)]
     pub actual_stderr: String,
+    #[builder(default)]
     pub expected_status: i32,
+    #[builder(default)]
     pub actual_status: i32,
 }
 

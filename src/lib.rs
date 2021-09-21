@@ -25,7 +25,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 
     let printer = Printer::new();
 
-    printer.print_report(&report);
+    printer.print_report(&report, &mut std::io::stdout())?;
 
     Ok(())
 }

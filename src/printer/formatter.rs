@@ -4,14 +4,22 @@ use similar::{ChangeTag, TextDiff};
 
 use crate::types::result::TestResult;
 
-pub struct Formatter;
+#[mockall::automock]
+pub trait Formatter {
+    fn compute_summary(&self, result: &TestResult) -> String;
+}
 
-impl Formatter {
+#[derive(Eq, PartialEq, Debug)]
+pub struct DefaultFormatter;
+
+impl DefaultFormatter {
     pub fn new() -> Self {
-        Formatter {}
+        DefaultFormatter {}
     }
+}
 
-    pub fn compute_summary(&self, result: &TestResult) -> String {
+impl Formatter for DefaultFormatter {
+    fn compute_summary(&self, result: &TestResult) -> String {
         vec![
             self.compute_status(result.expected_status, result.actual_status),
             self.compute_diff("stdout", &result.expected_stdout, &result.actual_stdout),
@@ -19,7 +27,9 @@ impl Formatter {
         ]
         .join("")
     }
+}
 
+impl DefaultFormatter {
     fn compute_status(&self, expected: i32, actual: i32) -> String {
         match expected == actual {
             true => String::new(),
@@ -83,7 +93,7 @@ mod tests {
     #[test]
     fn test_compute_summary_successful() {
         // GIVEN
-        let formatter = Formatter::new();
+        let formatter = DefaultFormatter::new();
         let result = TestResult::from_name("mytest");
 
         // WHEN
@@ -96,7 +106,7 @@ mod tests {
     #[test]
     fn test_compute_summary_code_differs() {
         // GIVEN
-        let formatter = Formatter::new();
+        let formatter = DefaultFormatter::new();
         let mut result = TestResult::from_name("mytest");
         result.expected_status = 0;
         result.actual_status = 1;
@@ -118,7 +128,7 @@ mod tests {
     #[test]
     fn test_compute_summary_stdout_differs() {
         // GIVEN
-        let formatter = Formatter::new();
+        let formatter = DefaultFormatter::new();
         let mut result = TestResult::from_name("mytest");
         result.expected_stdout = "foo".to_string();
         result.actual_stdout = "fou".to_string();
@@ -146,7 +156,7 @@ mod tests {
     #[test]
     fn test_compute_summary_stderr_differs() {
         // GIVEN
-        let formatter = Formatter::new();
+        let formatter = DefaultFormatter::new();
         let mut result = TestResult::from_name("mytest");
         result.expected_stderr = "foo".to_string();
         result.actual_stderr = "fou".to_string();
@@ -174,7 +184,7 @@ mod tests {
     #[test]
     fn test_compute_summary_everything_differs() {
         // GIVEN
-        let formatter = Formatter::new();
+        let formatter = DefaultFormatter::new();
         let result = TestResult {
             name: "mytest".into(),
             expected_stdout: "foo".to_string(),
