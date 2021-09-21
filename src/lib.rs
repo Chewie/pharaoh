@@ -16,7 +16,7 @@ pub fn run(gatherer: impl Gatherer, runner: impl Runner, printer: impl Printer) 
         .context("Failed to run tests")?;
 
     printer
-        .print_report(&report, &mut std::io::stdout())
+        .print_report(&report)
         .context("Failed to write report")?;
 
     Ok(())
