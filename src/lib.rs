@@ -21,3 +21,53 @@ pub fn run(gatherer: impl Gatherer, runner: impl Runner, printer: impl Printer) 
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mockall::*;
+
+    use crate::types::result::TestReport;
+    use crate::types::testcase::TestSuiteCollection;
+
+    #[test]
+    fn test_run() {
+        // GIVEN
+        let collection = a_testsuite_collection();
+
+        let mut gatherer = gatherer::MockGatherer::new();
+        gatherer
+            .expect_gather()
+            .times(1)
+            .return_once(move || Ok(a_testsuite_collection()));
+
+        let report = the_resulting_report();
+        let mut runner = runner::MockRunner::new();
+        runner
+            .expect_run_all_tests()
+            .with(predicate::eq(collection))
+            .times(1)
+            .return_once(move |_| Ok(the_resulting_report()));
+
+        let mut printer = printer::MockPrinter::new();
+        printer
+            .expect_print_report()
+            .with(predicate::eq(report))
+            .times(1)
+            .return_once(move |_| Ok(()));
+
+        // WHEN
+        let run_result = run(gatherer, runner, printer);
+
+        // THEN
+        assert!(run_result.is_ok());
+    }
+
+    fn a_testsuite_collection() -> TestSuiteCollection {
+        TestSuiteCollection { testsuites: vec![] }
+    }
+
+    fn the_resulting_report() -> TestReport {
+        TestReport { testsuites: vec![] }
+    }
+}

@@ -12,7 +12,7 @@ pub use serde::{Deserialize, Serialize};
 /// The specification for a test run.
 ///
 /// This is usually part of a [TestSuite]
-#[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct TestCase {
     pub name: String,
     pub cmd: String,
@@ -29,7 +29,7 @@ pub struct TestCase {
 /// A collection of TestCases
 ///
 /// This is usually part of a [TestSuiteCollection]
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub struct TestSuite {
     pub name: String,
     pub tests: Vec<TestCase>,
@@ -39,7 +39,7 @@ pub struct TestSuite {
 ///
 /// This usually represents the entirety of your tests, for example all the YAML files in a given
 /// directory.
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub struct TestSuiteCollection {
     pub testsuites: Vec<TestSuite>,
 }

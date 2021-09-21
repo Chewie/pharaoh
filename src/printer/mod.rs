@@ -8,6 +8,7 @@ mod formatter;
 use crate::types::result::TestReport;
 use formatter::{DefaultFormatter, Formatter};
 
+#[mockall::automock]
 pub trait Printer {
     fn print_report(&self, report: &TestReport) -> Result<()>;
 }

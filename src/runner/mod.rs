@@ -6,6 +6,7 @@ use crate::types::result::{TestReport, TestResult, TestSuiteResult};
 use crate::types::testcase::{TestCase, TestSuite, TestSuiteCollection};
 use executor::{Executor, SimpleExecutor};
 
+#[mockall::automock]
 pub trait Runner {
     fn run_all_tests(&self, collection: TestSuiteCollection) -> Result<TestReport>;
 }
