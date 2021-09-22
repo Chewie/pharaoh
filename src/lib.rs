@@ -33,26 +33,23 @@ mod tests {
     #[test]
     fn test_run() {
         // GIVEN
-        let collection = a_testsuite_collection();
-
         let mut gatherer = gatherer::MockGatherer::new();
         gatherer
             .expect_gather()
             .times(1)
             .return_once(move || Ok(a_testsuite_collection()));
 
-        let report = the_resulting_report();
         let mut runner = runner::MockRunner::new();
         runner
             .expect_run_all_tests()
-            .with(predicate::eq(collection))
+            .with(predicate::eq(a_testsuite_collection()))
             .times(1)
             .return_once(move |_| Ok(the_resulting_report()));
 
         let mut printer = printer::MockPrinter::new();
         printer
             .expect_print_report()
-            .with(predicate::eq(report))
+            .with(predicate::eq(the_resulting_report()))
             .times(1)
             .return_once(move |_| Ok(()));
 
