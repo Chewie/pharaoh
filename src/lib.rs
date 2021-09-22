@@ -61,10 +61,10 @@ mod tests {
     }
 
     fn a_testsuite_collection() -> TestSuiteCollection {
-        TestSuiteCollection { testsuites: vec![] }
+        TestSuiteCollection::default()
     }
 
     fn the_resulting_report() -> TestReport {
-        TestReport { testsuites: vec![] }
+        TestReport::default()
     }
 }

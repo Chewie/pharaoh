@@ -27,7 +27,7 @@ pub struct TestSuiteResult {
     pub results: Vec<TestResult>,
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Default)]
 pub struct TestReport {
     pub testsuites: Vec<TestSuiteResult>,
 }

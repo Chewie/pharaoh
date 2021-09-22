@@ -39,7 +39,7 @@ pub struct TestSuite {
 ///
 /// This usually represents the entirety of your tests, for example all the YAML files in a given
 /// directory.
-#[derive(Eq, PartialEq, Debug, Clone)]
+#[derive(Eq, PartialEq, Debug, Clone, Default)]
 pub struct TestSuiteCollection {
     pub testsuites: Vec<TestSuite>,
 }
