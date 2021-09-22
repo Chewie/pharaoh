@@ -11,6 +11,7 @@ pub trait Runner {
     fn run_all_tests(&self, collection: TestSuiteCollection) -> Result<TestReport>;
 }
 
+#[derive(Default)]
 pub struct DefaultRunner<E: Executor> {
     executor: E,
 }
@@ -30,12 +31,6 @@ impl<E: Executor> Runner for DefaultRunner<E> {
 impl DefaultRunner<SimpleExecutor> {
     pub fn new() -> Self {
         Self::with_executor(SimpleExecutor::new())
-    }
-}
-
-impl Default for DefaultRunner<SimpleExecutor> {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

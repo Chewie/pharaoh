@@ -6,14 +6,8 @@ pub trait Walker {
     fn walk(&self, search_dir: &str) -> Result<Vec<PathBuf>>;
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Default)]
 pub struct DefaultWalker {}
-
-impl Default for DefaultWalker {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 impl DefaultWalker {
     pub fn new() -> Self {

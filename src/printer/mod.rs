@@ -13,6 +13,7 @@ pub trait Printer {
     fn print_report(&self, report: &TestReport) -> Result<()>;
 }
 
+#[derive(Default)]
 pub struct ColorPrinter<F: Formatter, W: io::Write> {
     formatter: F,
     writer: RefCell<W>,
@@ -21,12 +22,6 @@ pub struct ColorPrinter<F: Formatter, W: io::Write> {
 impl ColorPrinter<DefaultFormatter, io::Stdout> {
     pub fn new() -> Self {
         Self::with_dependencies(DefaultFormatter::new(), io::stdout())
-    }
-}
-
-impl Default for ColorPrinter<DefaultFormatter, io::Stdout> {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

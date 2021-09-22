@@ -10,14 +10,8 @@ pub trait Parser {
     fn from_file(&self, path: &path::Path, name: String) -> Result<TestSuite>;
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Default)]
 pub struct DefaultParser {}
-
-impl Default for DefaultParser {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 impl DefaultParser {
     pub fn new() -> Self {

@@ -8,18 +8,12 @@ pub trait Executor {
     fn execute(&self, testcase: &TestCase) -> Result<Output>;
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Default)]
 pub struct SimpleExecutor {}
 
 impl SimpleExecutor {
     pub fn new() -> Self {
         SimpleExecutor {}
-    }
-}
-
-impl Default for SimpleExecutor {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

@@ -9,14 +9,8 @@ pub trait Formatter {
     fn compute_summary(&self, result: &TestResult) -> String;
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Default)]
 pub struct DefaultFormatter;
-
-impl Default for DefaultFormatter {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 impl Formatter for DefaultFormatter {
     fn compute_summary(&self, result: &TestResult) -> String {
