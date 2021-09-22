@@ -5,7 +5,7 @@ use std::io;
 
 mod formatter;
 
-use crate::types::result::TestReport;
+use crate::types::result::{TestReport, TestResult, TestSuiteResult};
 use formatter::{DefaultFormatter, Formatter};
 
 #[mockall::automock]
@@ -43,29 +43,47 @@ impl<F: Formatter, W: io::Write> Printer for ColorPrinter<F, W> {
         let mut failures = vec![];
 
         for suite_result in &report.testsuites {
-            writeln!(
-                self.writer.borrow_mut(),
-                "Running tests for {}",
-                suite_result.name
-            )?;
+            self.print_testsuite_header(suite_result)?;
             for test_result in &suite_result.results {
-                let successful = test_result.is_successful();
-                let success_msg = match successful {
-                    true => "OK".green(),
-                    false => "FAILED".red(),
-                };
-                writeln!(
-                    self.writer.borrow_mut(),
-                    "test {} ... {}",
-                    test_result.name,
-                    success_msg
-                )?;
-                if !successful {
+                self.print_oneliner(test_result)?;
+                if !test_result.is_successful() {
                     failures.push(test_result);
                 }
             }
         }
+        self.print_failures(failures)?;
 
+        Ok(())
+    }
+}
+
+impl<F: Formatter, W: io::Write> ColorPrinter<F, W> {
+    fn print_testsuite_header(&self, testsuite: &TestSuiteResult) -> Result<()> {
+        writeln!(
+            self.writer.borrow_mut(),
+            "Running tests for {}",
+            testsuite.name
+        )?;
+
+        Ok(())
+    }
+
+    fn print_oneliner(&self, result: &TestResult) -> Result<()> {
+        let success_msg = match result.is_successful() {
+            true => "OK".green(),
+            false => "FAILED".red(),
+        };
+        writeln!(
+            self.writer.borrow_mut(),
+            "test {} ... {}",
+            result.name,
+            success_msg
+        )?;
+
+        Ok(())
+    }
+
+    fn print_failures(&self, failures: Vec<&TestResult>) -> Result<()> {
         if !failures.is_empty() {
             writeln!(self.writer.borrow_mut(), "\nfailures:\n")?;
             for failure in failures {
@@ -77,6 +95,7 @@ impl<F: Formatter, W: io::Write> Printer for ColorPrinter<F, W> {
                 )?;
             }
         }
+
         Ok(())
     }
 }
