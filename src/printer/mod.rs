@@ -15,21 +15,21 @@ pub trait Printer {
 
 #[derive(Default)]
 pub struct ColorPrinter<F: Formatter, W: io::Write> {
-    formatter: F,
     writer: RefCell<W>,
+    formatter: F,
 }
 
-impl ColorPrinter<DefaultFormatter, io::Stdout> {
-    pub fn new() -> Self {
-        Self::with_dependencies(DefaultFormatter::new(), io::stdout())
+impl<W: io::Write> ColorPrinter<DefaultFormatter, W> {
+    pub fn new(writer: W) -> Self {
+        Self::with_formatter(writer, DefaultFormatter::new())
     }
 }
 
 impl<F: Formatter, W: io::Write> ColorPrinter<F, W> {
-    pub fn with_dependencies(formatter: F, writer: W) -> Self {
+    pub fn with_formatter(writer: W, formatter: F) -> Self {
         ColorPrinter {
-            formatter,
             writer: RefCell::new(writer),
+            formatter,
         }
     }
 }
@@ -95,11 +95,11 @@ mod tests {
     }
 
     #[test]
-    fn test_new_calls_with_dependencies() {
+    fn test_new_calls_with_formatter() {
         // GIVEN
 
         // WHEN
-        let printer = ColorPrinter::new();
+        let printer = ColorPrinter::new(io::stdout());
 
         // THEN
         assert_eq!(TypeId::of::<DefaultFormatter>(), type_of(printer.formatter));
@@ -114,7 +114,7 @@ mod tests {
         // GIVEN
         let report = TestReport { testsuites: vec![] };
         let result = Vec::new();
-        let printer = ColorPrinter::with_dependencies(DefaultFormatter::new(), result);
+        let printer = ColorPrinter::with_formatter(result, DefaultFormatter::new());
 
         // WHEN
         printer.print_report(&report).unwrap();
@@ -139,7 +139,7 @@ mod tests {
             }],
         };
         let result = Vec::new();
-        let printer = ColorPrinter::with_dependencies(DefaultFormatter::new(), result);
+        let printer = ColorPrinter::with_formatter(result, DefaultFormatter::new());
 
         // WHEN
         printer.print_report(&report).unwrap();
@@ -167,7 +167,7 @@ mod tests {
             .times(1)
             .return_const("FAIL\n");
 
-        let printer = ColorPrinter::with_dependencies(mock_formatter, result);
+        let printer = ColorPrinter::with_formatter(result, mock_formatter);
 
         // WHEN
         printer.print_report(&report).unwrap();

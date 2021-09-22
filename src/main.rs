@@ -11,7 +11,7 @@ fn main() -> Result<()> {
 
     let gatherer = YamlGatherer::new(search_dir.to_string());
     let runner = DefaultRunner::new();
-    let printer = ColorPrinter::new();
+    let printer = ColorPrinter::new(std::io::stdout());
 
     pharaoh::run(gatherer, runner, printer)
 }
