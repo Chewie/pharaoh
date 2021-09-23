@@ -1,3 +1,9 @@
+//! Pharaoh
+//!
+//! This is the library crate that supports the [pharaoh](https://github.com/Chewie/pharaoh) tool.
+//!
+//! The main function is [run], which will gather test cases from a [Gatherer], run them through a
+//! [Runner], and print the result via a [Printer].
 use anyhow::{Context, Result};
 
 pub mod gatherer;
@@ -9,6 +15,7 @@ pub use gatherer::{Gatherer, YamlGatherer};
 pub use printer::{ColorPrinter, Printer};
 pub use runner::{DefaultRunner, Runner};
 
+/// Runs the test suite.
 pub fn run(gatherer: impl Gatherer, runner: impl Runner, printer: impl Printer) -> Result<()> {
     let collection = gatherer.gather().context("Failed to parse YAML files")?;
     let report = runner

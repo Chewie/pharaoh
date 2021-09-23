@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{App, Arg};
+use clap::*;
 
 use pharaoh::ColorPrinter;
 use pharaoh::DefaultRunner;
@@ -17,5 +17,10 @@ fn main() -> Result<()> {
 }
 
 fn build_args() -> App<'static, 'static> {
-    App::new("Pharaoh").arg(Arg::with_name("search_dir").index(1).default_value("."))
+    clap::app_from_crate!().arg(
+        Arg::with_name("search_dir")
+            .index(1)
+            .help("The directory in which YAML are searched")
+            .default_value("."),
+    )
 }
