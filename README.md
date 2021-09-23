@@ -86,6 +86,24 @@ stderr: |
 status: 1
 ~~~
 
+## Installing
+
+
+### Release binaries
+
+Release binaries are available for Linux and MacOS. Please see the [release page](https://github.com/Chewie/pharaoh/releases) for all available binaries.
+
+Simply rename the downloaded file to `pharaoh`, make it executable via `chmod +x`, and place it somewhere in your `$PATH`.
+
+### Via Cargo
+
+Being developed in Rust, Pharaoh is available via cargo:
+
+~~~sh
+$ cargo install pharaoh
+~~~
+
+
 ## Who is this project for?
 
 Pharaoh was designed with school projects and katas in mind, or more generally
