@@ -6,18 +6,18 @@ use crate::types::result::TestResult;
 
 #[mockall::automock]
 pub trait Formatter {
-    fn compute_summary(&self, result: &TestResult) -> String;
+    fn format_summary(&self, result: &TestResult) -> String;
 }
 
 #[derive(Eq, PartialEq, Debug, Default)]
 pub struct DefaultFormatter;
 
 impl Formatter for DefaultFormatter {
-    fn compute_summary(&self, result: &TestResult) -> String {
+    fn format_summary(&self, result: &TestResult) -> String {
         vec![
-            self.compute_status(result.expected_status, result.actual_status),
-            self.compute_diff("stdout", &result.expected_stdout, &result.actual_stdout),
-            self.compute_diff("stderr", &result.expected_stderr, &result.actual_stderr),
+            self.format_status(result.expected_status, result.actual_status),
+            self.format_diff("stdout", &result.expected_stdout, &result.actual_stdout),
+            self.format_diff("stderr", &result.expected_stderr, &result.actual_stderr),
         ]
         .join("")
     }
@@ -27,7 +27,7 @@ impl DefaultFormatter {
     pub fn new() -> Self {
         DefaultFormatter {}
     }
-    fn compute_status(&self, expected: i32, actual: i32) -> String {
+    fn format_status(&self, expected: i32, actual: i32) -> String {
         match expected == actual {
             true => String::new(),
             false => formatdoc!(
@@ -43,7 +43,7 @@ impl DefaultFormatter {
         }
     }
 
-    fn compute_diff(&self, name: &str, expected: &str, actual: &str) -> String {
+    fn format_diff(&self, name: &str, expected: &str, actual: &str) -> String {
         let mut diff_summary = vec![];
         let diff = TextDiff::from_lines(expected, actual);
         if !diff.ops().to_vec().is_empty() {
@@ -88,20 +88,20 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_summary_successful() {
+    fn test_format_summary_successful() {
         // GIVEN
         let formatter = DefaultFormatter::new();
         let result = TestResult::from_name("mytest");
 
         // WHEN
-        let summary = formatter.compute_summary(&result);
+        let summary = formatter.format_summary(&result);
 
         // THEN
         assert_eq!("".to_string(), summary);
     }
 
     #[test]
-    fn test_compute_summary_code_differs() {
+    fn test_format_summary_code_differs() {
         // GIVEN
         let formatter = DefaultFormatter::new();
         let mut result = TestResult::from_name("mytest");
@@ -109,7 +109,7 @@ mod tests {
         result.actual_status = 1;
 
         // WHEN
-        let summary = formatter.compute_summary(&result);
+        let summary = formatter.format_summary(&result);
 
         // THEN
         assert_eq!(
@@ -123,7 +123,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_summary_stdout_differs() {
+    fn test_format_summary_stdout_differs() {
         // GIVEN
         let formatter = DefaultFormatter::new();
         let mut result = TestResult::from_name("mytest");
@@ -131,7 +131,7 @@ mod tests {
         result.actual_stdout = "fou".to_string();
 
         // WHEN
-        let summary = formatter.compute_summary(&result);
+        let summary = formatter.format_summary(&result);
 
         // THEN
         let diff = format!("{}{}", "-foo\n".green(), "+fou\n".red());
@@ -151,7 +151,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_summary_stderr_differs() {
+    fn test_format_summary_stderr_differs() {
         // GIVEN
         let formatter = DefaultFormatter::new();
         let mut result = TestResult::from_name("mytest");
@@ -159,7 +159,7 @@ mod tests {
         result.actual_stderr = "fou".to_string();
 
         // WHEN
-        let summary = formatter.compute_summary(&result);
+        let summary = formatter.format_summary(&result);
 
         // THEN
         let diff = format!("{}{}", "-foo\n".green(), "+fou\n".red());
@@ -179,7 +179,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_summary_everything_differs() {
+    fn test_format_summary_everything_differs() {
         // GIVEN
         let formatter = DefaultFormatter::new();
         let result = TestResult {
@@ -193,7 +193,7 @@ mod tests {
         };
 
         // WHEN
-        let summary = formatter.compute_summary(&result);
+        let summary = formatter.format_summary(&result);
 
         // THEN
         let stdout_diff = format!("{}{}", "-foo\n".green(), "+fou\n".red());

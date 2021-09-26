@@ -1,3 +1,4 @@
+//! Implementation of a Gatherer for YAML files
 use anyhow::Result;
 use std::path;
 
@@ -11,6 +12,7 @@ mod walker;
 use parser::DefaultParser;
 use walker::DefaultWalker;
 
+/// Gather testcase from YAML files in a directory
 pub struct YamlGatherer<Parser: parser::Parser, Walker: walker::Walker> {
     search_dir: String,
     parser: Parser,
@@ -18,6 +20,7 @@ pub struct YamlGatherer<Parser: parser::Parser, Walker: walker::Walker> {
 }
 
 impl YamlGatherer<DefaultParser, DefaultWalker> {
+    /// Constructs a new [YamlGatherer]
     pub fn new(search_dir: String) -> Self {
         Self::with_dependencies(search_dir, DefaultParser::new(), DefaultWalker::new())
     }
@@ -28,7 +31,7 @@ where
     Parser: parser::Parser,
     Walker: walker::Walker,
 {
-    pub fn with_dependencies(search_dir: String, parser: Parser, walker: Walker) -> Self {
+    fn with_dependencies(search_dir: String, parser: Parser, walker: Walker) -> Self {
         YamlGatherer {
             search_dir,
             parser,

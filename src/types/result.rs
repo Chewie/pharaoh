@@ -1,38 +1,65 @@
+//! # Test results
+//!
+//! This module contains the various structs representing the result of a run:
+//!
+//! * A [TestResult] represents the result of a single test.
+//! * A [TestSuiteResult] is a collection of [TestResult]
+//! * A [TestReport] is the entirety of all [TestSuiteResult]s
 use derive_builder::Builder;
 use std::process::Output;
 
 use crate::types::testcase::TestCase;
 
+/// The result of a test run.
+///
+/// This is usually part of a [TestSuiteResult]
 #[derive(Debug, Eq, PartialEq, Clone, Builder)]
 #[builder(setter(into))]
 pub struct TestResult {
+    /// The name of the test
     pub name: String,
+    /// The stdout that was expected in the [TestCase]
     #[builder(default)]
     pub expected_stdout: String,
+    /// The stdout that was actually obtained from the run
     #[builder(default)]
     pub actual_stdout: String,
     #[builder(default)]
+    /// The stderr that was expected in the [TestCase]
     pub expected_stderr: String,
     #[builder(default)]
+    /// The stderr that was actually obtained from the run
     pub actual_stderr: String,
     #[builder(default)]
+    /// The exit status that was expected in the [TestCase]
     pub expected_status: i32,
+    /// The exit status that was actually obtained from the run
     #[builder(default)]
     pub actual_status: i32,
 }
 
+/// A collection of [TestResult]s
+///
+/// This is usually part of a [TestReport]
 #[derive(Eq, PartialEq, Debug)]
 pub struct TestSuiteResult {
+    /// The name of the testsuite
     pub name: String,
+    /// The results that are part of that test suite
     pub results: Vec<TestResult>,
 }
 
+/// A collection of [TestSuiteResult]s
+///
+/// This usually represents the entirety of your results
 #[derive(Eq, PartialEq, Debug, Default)]
 pub struct TestReport {
+    /// The testsuites that are part of that report
     pub testsuites: Vec<TestSuiteResult>,
 }
 
 impl TestResult {
+    /// Construct a [TestResult] from a [TestCase] and an [Output]
     pub fn from_output(testcase: TestCase, output: Output) -> TestResult {
         TestResult {
             name: testcase.name,
@@ -46,6 +73,10 @@ impl TestResult {
         }
     }
 
+    /// Calculates whether a [TestResult] is successful or not
+    ///
+    /// A [TestResult] is deemed successful if the stdout, stderr and exit status match their
+    /// expected and actual values.
     pub fn is_successful(&self) -> bool {
         self.expected_status == self.actual_status
             && self.expected_stdout == self.actual_stdout

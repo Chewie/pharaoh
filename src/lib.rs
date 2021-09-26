@@ -4,6 +4,7 @@
 //!
 //! The main function is [run], which will gather test cases from a [Gatherer], run them through a
 //! [Runner], and print the result via a [Printer].
+#![warn(missing_docs)]
 use anyhow::{Context, Result};
 
 pub mod gatherer;
@@ -11,8 +12,11 @@ pub mod printer;
 pub mod runner;
 pub mod types;
 
+#[doc(inline)]
 pub use gatherer::{Gatherer, YamlGatherer};
+#[doc(inline)]
 pub use printer::{ColorPrinter, Printer};
+#[doc(inline)]
 pub use runner::{DefaultRunner, Runner};
 
 /// Runs the test suite.

@@ -1,3 +1,4 @@
+//! Runs test cases to produce a [TestReport]
 use anyhow::Result;
 
 mod executor;
@@ -6,11 +7,14 @@ use crate::types::result::{TestReport, TestResult, TestSuiteResult};
 use crate::types::testcase::{TestCase, TestSuite, TestSuiteCollection};
 use executor::{Executor, SimpleExecutor};
 
+/// A trait to regroup all struct able to run a [TestSuiteCollection]
 #[mockall::automock]
 pub trait Runner {
+    /// Run a [TestSuiteCollection], producing a [TestReport] as its output
     fn run_all_tests(&self, collection: TestSuiteCollection) -> Result<TestReport>;
 }
 
+/// The basic implementation of [Runner]
 #[derive(Default)]
 pub struct DefaultRunner<E: Executor> {
     executor: E,
@@ -29,13 +33,14 @@ impl<E: Executor> Runner for DefaultRunner<E> {
 }
 
 impl DefaultRunner<SimpleExecutor> {
+    /// Constructs a new [DefaultRunner]
     pub fn new() -> Self {
         Self::with_executor(SimpleExecutor::new())
     }
 }
 
 impl<E: Executor> DefaultRunner<E> {
-    pub fn with_executor(executor: E) -> Self {
+    fn with_executor(executor: E) -> Self {
         DefaultRunner { executor }
     }
 

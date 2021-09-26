@@ -1,3 +1,4 @@
+//! Printing a [TestReport]
 use anyhow::Result;
 use colored::Colorize;
 use std::cell::RefCell;
@@ -8,11 +9,14 @@ mod formatter;
 use crate::types::result::{TestReport, TestResult, TestSuiteResult};
 use formatter::{DefaultFormatter, Formatter};
 
+/// A trait to regroup all structs able to print a [TestReport] in some way
 #[mockall::automock]
 pub trait Printer {
+    /// Format and print a [TestReport]
     fn print_report(&self, report: &TestReport) -> Result<()>;
 }
 
+/// The basic implementation of [Printer]
 #[derive(Default)]
 pub struct ColorPrinter<F: Formatter, W: io::Write> {
     writer: RefCell<W>,
@@ -20,13 +24,14 @@ pub struct ColorPrinter<F: Formatter, W: io::Write> {
 }
 
 impl<W: io::Write> ColorPrinter<DefaultFormatter, W> {
+    /// Constructs a new [ColorPrinter]
     pub fn new(writer: W) -> Self {
         Self::with_formatter(writer, DefaultFormatter::new())
     }
 }
 
 impl<F: Formatter, W: io::Write> ColorPrinter<F, W> {
-    pub fn with_formatter(writer: W, formatter: F) -> Self {
+    fn with_formatter(writer: W, formatter: F) -> Self {
         ColorPrinter {
             writer: RefCell::new(writer),
             formatter,
@@ -91,7 +96,7 @@ impl<F: Formatter, W: io::Write> ColorPrinter<F, W> {
                 writeln!(
                     self.writer.borrow_mut(),
                     "{}",
-                    self.formatter.compute_summary(failure)
+                    self.formatter.format_summary(failure)
                 )?;
             }
         }
@@ -181,7 +186,7 @@ mod tests {
 
         let mut mock_formatter = formatter::MockFormatter::new();
         mock_formatter
-            .expect_compute_summary()
+            .expect_format_summary()
             .with(predicate::eq(failing_test))
             .times(1)
             .return_const("FAIL\n");
