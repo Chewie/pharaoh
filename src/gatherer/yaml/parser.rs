@@ -7,7 +7,7 @@ use std::path;
 use crate::types::testcase::{TestCase, TestSuite};
 
 pub trait Parser {
-    fn from_file(&self, path: &path::Path, name: String) -> Result<TestSuite>;
+    fn parse_file(&self, path: &path::Path, name: String) -> Result<TestSuite>;
 }
 
 #[derive(Eq, PartialEq, Debug, Default)]
@@ -18,7 +18,7 @@ impl DefaultParser {
         DefaultParser {}
     }
 
-    pub fn from_reader(&self, reader: &mut impl std::io::Read, name: String) -> Result<TestSuite> {
+    pub fn parse_reader(&self, reader: &mut impl std::io::Read, name: String) -> Result<TestSuite> {
         Ok(TestSuite {
             tests: serde_yaml::Deserializer::from_reader(reader)
                 .map(|doc| {
@@ -34,10 +34,10 @@ impl DefaultParser {
 }
 
 impl Parser for DefaultParser {
-    fn from_file(&self, path: &path::Path, name: String) -> Result<TestSuite> {
+    fn parse_file(&self, path: &path::Path, name: String) -> Result<TestSuite> {
         let mut file = fs::File::open(path)?;
 
-        self.from_reader(&mut file, name)
+        self.parse_reader(&mut file, name)
     }
 }
 
@@ -65,7 +65,7 @@ mod tests {
 
         // WHEN
         let result = parser
-            .from_reader(&mut doc, "mytestsuite".to_string())
+            .parse_reader(&mut doc, "mytestsuite".to_string())
             .unwrap();
 
         // THEN
@@ -99,7 +99,7 @@ mod tests {
 
         // WHEN
         let result = parser
-            .from_reader(&mut doc, "mytestsuite".to_string())
+            .parse_reader(&mut doc, "mytestsuite".to_string())
             .unwrap();
 
         // THEN
@@ -139,7 +139,7 @@ mod tests {
         let parser = DefaultParser::new();
 
         // WHEN
-        let result = parser.from_reader(&mut doc, "testsuite".to_string());
+        let result = parser.parse_reader(&mut doc, "testsuite".to_string());
 
         // THEN
         assert!(result.is_err());

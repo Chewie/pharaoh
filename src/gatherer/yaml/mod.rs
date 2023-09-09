@@ -40,7 +40,7 @@ where
     }
     fn get_testsuite_from_path(&self, path: &path::Path) -> Result<TestSuite> {
         let testsuite_name = utils::get_stem(path, &self.search_dir);
-        self.parser.from_file(path, testsuite_name)
+        self.parser.parse_file(path, testsuite_name)
     }
 }
 
@@ -75,7 +75,7 @@ mod tests {
     }
 
     impl parser::Parser for DummyParser {
-        fn from_file(&self, _path: &path::Path, name: String) -> Result<TestSuite> {
+        fn parse_file(&self, _path: &path::Path, name: String) -> Result<TestSuite> {
             Ok(TestSuite {
                 name,
                 tests: vec![],
