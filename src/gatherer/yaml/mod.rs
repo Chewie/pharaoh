@@ -58,7 +58,7 @@ where
             .map(|path| self.get_testsuite_from_path(&path))
             .collect::<Result<_>>()?;
 
-        Ok(TestSuiteCollection::new(testsuites.into_iter()))
+        Ok(TestSuiteCollection::new(testsuites))
     }
 }
 

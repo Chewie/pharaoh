@@ -14,11 +14,9 @@ pub struct DefaultFormatter;
 
 impl Formatter for DefaultFormatter {
     fn format_summary(&self, result: &TestResult) -> String {
-        vec![
-            self.format_status(result.expected_status, result.actual_status),
+        [self.format_status(result.expected_status, result.actual_status),
             self.format_diff("stdout", &result.expected_stdout, &result.actual_stdout),
-            self.format_diff("stderr", &result.expected_stderr, &result.actual_stderr),
-        ]
+            self.format_diff("stderr", &result.expected_stderr, &result.actual_stderr)]
         .join("")
     }
 }

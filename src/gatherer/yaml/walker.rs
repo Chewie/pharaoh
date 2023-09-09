@@ -22,7 +22,6 @@ impl Walker for DefaultWalker {
                 .min_depth(1)
                 .sort_by(|a, b| a.path().cmp(b.path()))
                 .build()?
-                .into_iter()
                 .filter_map(Result::ok)
                 .map(|entry| entry.into_path())
                 .collect(),
