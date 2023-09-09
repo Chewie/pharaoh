@@ -1,6 +1,6 @@
 # Pharaoh : build that test pyramid!
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/chewie/pharaoh/ci)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/chewie/pharaoh/ci.yaml?branch=master)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/chewie/pharaoh)
 ![Codecov](https://img.shields.io/codecov/c/github/chewie/pharaoh)
 
